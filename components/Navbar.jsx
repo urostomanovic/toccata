@@ -17,7 +17,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-gray-900 text-white px-6 py-3 flex gap-6">
+    <nav className="bg-gray-900 text-white px-6 py-2 flex gap-6">
       {navItems.map((item) => (
         <Link
           key={item.href}

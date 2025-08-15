@@ -1,10 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Navbar from "@/components/Navbar";
 import RoomsSubnav from "@/components/RoomsSubnav";
 import RoomCardMini from "@/components/RoomCardMini";
 
 export default function RoomsPage() {
+  const router = useRouter();
   const floors = 10;
   const roomsPerFloor = 20;
 
@@ -37,32 +40,40 @@ export default function RoomsPage() {
     );
   });
 
+  const handleRoomClick = (roomId) => {
+    router.push(`/roomtypeone?id=${roomId}`);
+  };
+
   return (
     <>
-      {/* RoomsSubnav skroz do glavnog menija - bez praznog prostora */}
+      <Navbar />
       <RoomsSubnav />
-
-      <div className="p-4">
-        <h1 className="text-xl font-bold mb-4">Virtual Hotel Overview</h1>
-
-        {/* Glavni sadržaj sa scroll barovima */}
-        <div className="overflow-x-auto overflow-y-auto max-h-[75vh] border rounded shadow-inner">
-          <div className="flex flex-col gap-2 min-w-[1300px]">
-            {hotel.map((floor, floorIndex) => (
-              <div key={floorIndex} className="flex gap-2">
-                {floor.map((room) => (
-                  <RoomCardMini
-                    key={room.id}
-                    id={room.id}
-                    status={room.status}
-                    icons={room.icons}
-                  />
-                ))}
-              </div>
-            ))}
+      <main className="p-6">
+        <div className="p-4">
+          {/* Glavni sadržaj sa scroll barovima */}
+          <div className="overflow-x-auto overflow-y-auto max-h-[85vh] border rounded shadow-inner">
+            <div className="flex flex-col gap-2 min-w-[1300px]">
+              {hotel.map((floor, floorIndex) => (
+                <div key={floorIndex} className="flex gap-2">
+                  {floor.map((room) => (
+                    <div 
+                      key={room.id} 
+                      onClick={() => handleRoomClick(room.id)}
+                      className="cursor-pointer hover:scale-105 transition-transform"
+                    >
+                      <RoomCardMini
+                        id={room.id}
+                        status={room.status}
+                        icons={room.icons}
+                      />
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </main>
     </>
   );
 }

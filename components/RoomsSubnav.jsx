@@ -19,7 +19,7 @@ export default function RoomsSubnav() {
   const pathname = usePathname();
 
   return (
-    <div className="bg-gray-100 px-6 py-0 flex flex-wrap gap-4 text-sm -mt-3">
+    <div className="bg-gray-100 px-6 py-2 flex flex-wrap gap-4 text-sm">
       {items.map((item) => (
         <Link
           key={item.href}
