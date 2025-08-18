@@ -1,0 +1,2328 @@
+openapi: "3.0.1"
+info:
+  title: "Toccata API Documentation"
+  version: "0.0.1"
+servers:
+  - url: "https://{toccata-server-ip}:9000/toccata"
+    description: "Base address for all endpoints"
+paths:
+  /api/v1/parameter/getAll:
+    post:
+      summary: "getAllParametersInfo"
+      description: "getAllParametersInfo"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    message:
+                      type: "string"
+                      description: ""
+                    name:
+                      type: "string"
+                      description: ""
+                    description:
+                      type: "string"
+                      description: ""
+                    alarm:
+                      type: "boolean"
+                      description: ""
+                    tag:
+                      type: "string"
+                      description: "Attribute that may help deduce parameter's purpose. Examples: door_bell, temperature, guest_presence..."
+  /api/v1/parameter/get:
+    post:
+      summary: "getParametersInfo"
+      description: "getParametersInfo"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  name:
+                    type: "string"
+                    description: ""
+                  description:
+                    type: "string"
+                    description: ""
+                  alarm:
+                    type: "boolean"
+                    description: ""
+                  tag:
+                    type: "string"
+                    description: "Attribute that may help deduce parameter's purpose"
+  /api/v1/parameter/getAll/detailed:
+    post:
+      summary: "getAllParametersExtendedInfo"
+      description: "getAllParametersExtendedInfo"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    message:
+                      type: "string"
+                      description: ""
+                    name:
+                      type: "string"
+                      description: ""
+                    description:
+                      type: "string"
+                      description: ""
+                    alarm:
+                      type: "boolean"
+                      description: ""
+                    parameterType:
+                      type: "string"
+                      description: ""
+                    bacNetObjectNumber:
+                      type: "integer"
+                      description: ""
+                    bacNetObjectType:
+                      type: "string"
+                      description: ""
+                    allowsWrite:
+                      type: "boolean"
+                      description: "Attribute that indicates whether the parameter's value in a room can be modified externally"
+                    globalValue:
+                      type: "string"
+                      description: ""
+                    imageURL:
+                      type: "string"
+                      description: ""
+                    tag:
+                      type: "string"
+                      description: "Attribute that may help deduce parameter's purpose"
+                    relatedRoomNames:
+                      type: "array"
+                      description: ""
+                      items:
+                        type: "string"
+                    possibleStates:
+                      type: "array"
+                      description: ""
+                      items:
+                        type: "object"
+                        properties:
+                          value:
+                            type: "string"
+                            description: ""
+                          description:
+                            type: "string"
+                            description: ""
+                          imageURL:
+                            type: "string"
+                            description: ""
+                        description: ""
+  /api/v1/parameter/getAllValues:
+    post:
+      summary: "getAllParametersValues"
+      description: "getAllParametersValues"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    message:
+                      type: "string"
+                      description: ""
+                    name:
+                      type: "string"
+                      description: ""
+                    values:
+                      type: "array"
+                      description: ""
+                      items:
+                        $ref: "#/components/schemas/ParameterValueDto"
+  /api/v1/parameter/getValues:
+    post:
+      summary: "getParameterValues"
+      description: "getParameterValues"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  name:
+                    type: "string"
+                    description: ""
+                  values:
+                    type: "array"
+                    description: ""
+                    items:
+                      $ref: "#/components/schemas/ParameterValueDto"
+  /api/v1/parameter/getValue:
+    post:
+      summary: "getParameterValueInRoom"
+      description: "getParameterValueInRoom"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  roomName:
+                    type: "string"
+                    description: ""
+                  value:
+                    $ref: "#/components/schemas/ParameterValueDto"
+  /api/v1/parameter/setValue:
+    post:
+      summary: "writeParameterValue"
+      description: "writeParameterValue"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+                value:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  success:
+                    type: "boolean"
+                    description: ""
+  /api/v1/parameter/setValue/global:
+    post:
+      summary: "writeParameterGlobalValue"
+      description: "writeParameterGlobalValue"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+                value:
+                  type: "string"
+                  description: ""
+                roomGroupName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  success:
+                    type: "boolean"
+                    description: ""
+                  roomNamesAndSuccess:
+                    type: "array"
+                    description: ""
+                    items:
+                      type: "object"
+                      properties:
+                        roomName:
+                          type: "string"
+                          description: ""
+                        success:
+                          type: "boolean"
+                          description: ""
+                      description: ""
+  /api/v1/parameter/setValue/group:
+    post:
+      summary: "writeParameterGroupValue"
+      description: "writeParameterGroupValue"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                parameterName:
+                  type: "string"
+                  description: ""
+                roomName:
+                  type: "string"
+                  description: ""
+                value:
+                  type: "string"
+                  description: ""
+                roomGroupName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message:
+                    type: "string"
+                    description: ""
+                  success:
+                    type: "boolean"
+                    description: ""
+                  roomNamesAndSuccess:
+                    type: "array"
+                    description: ""
+                    items:
+                      type: "object"
+                      properties:
+                        roomName:
+                          type: "string"
+                          description: ""
+                        success:
+                          type: "boolean"
+                          description: ""
+                      description: ""
+  /api/v1/parameter/image/{imageType}/{imageName}:
+    get:
+      summary: "getParameterImage"
+      description: "getParameterImage"
+      parameters:
+      - name: "imageType"
+        in: "path"
+        description: ""
+        required: true
+        schema:
+          type: "string"
+      - name: "imageName"
+        in: "path"
+        description: ""
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  inputStream:
+                    type: "object"
+                    properties: {}
+                    description: "java.io.InputStream"
+                  readable:
+                    type: "boolean"
+                  open:
+                    type: "boolean"
+                  file:
+                    type: "object"
+                    properties:
+                      path:
+                        type: "string"
+                        description: "This abstract pathname's normalized pathname\
+                          \ string. A normalized\npathname string uses the default\
+                          \ name-separator character and does not\ncontain any duplicate\
+                          \ or redundant separators."
+                      name:
+                        type: "string"
+                        description: "Returns the name of the file or directory denoted\
+                          \ by this abstract\npathname.  This is just the last name\
+                          \ in the pathname's name\nsequence.  If the pathname's name\
+                          \ sequence is empty, then the empty\nstring is returned."
+                      parent:
+                        type: "string"
+                        description: "Returns the pathname string of this abstract\
+                          \ pathname's parent, or\n<code>null</code> if this pathname\
+                          \ does not name a parent directory.\n\n<p> The <em>parent</em>\
+                          \ of an abstract pathname consists of the\npathname's prefix,\
+                          \ if any, and each name in the pathname's name\nsequence\
+                          \ except for the last.  If the name sequence is empty then\n\
+                          the pathname does not name a parent directory."
+                      parentFile:
+                        type: "object"
+                        properties:
+                          path:
+                            type: "string"
+                            description: "This abstract pathname's normalized pathname\
+                              \ string. A normalized\npathname string uses the default\
+                              \ name-separator character and does not\ncontain any\
+                              \ duplicate or redundant separators."
+                          name:
+                            type: "string"
+                            description: "Returns the name of the file or directory\
+                              \ denoted by this abstract\npathname.  This is just\
+                              \ the last name in the pathname's name\nsequence.  If\
+                              \ the pathname's name sequence is empty, then the empty\n\
+                              string is returned."
+                          parent:
+                            type: "string"
+                            description: "Returns the pathname string of this abstract\
+                              \ pathname's parent, or\n<code>null</code> if this pathname\
+                              \ does not name a parent directory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          parentFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the abstract pathname of this abstract\
+                              \ pathname's parent,\nor <code>null</code> if this pathname\
+                              \ does not name a parent\ndirectory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          absolute:
+                            type: "boolean"
+                            description: "Tests whether this abstract pathname is\
+                              \ absolute.  The definition of\nabsolute pathname is\
+                              \ system dependent.  On UNIX systems, a pathname is\n\
+                              absolute if its prefix is <code>\"/\"</code>.  On Microsoft\
+                              \ Windows systems, a\npathname is absolute if its prefix\
+                              \ is a drive specifier followed by\n<code>\"\\\\\"</code>,\
+                              \ or if its prefix is <code>\"\\\\\\\\\"</code>."
+                          absolutePath:
+                            type: "string"
+                            description: "Returns the absolute pathname string of\
+                              \ this abstract pathname.\n\n<p> If this abstract pathname\
+                              \ is already absolute, then the pathname\nstring is\
+                              \ simply returned as if by the <code>{@link #getPath}</code>\n\
+                              method.  If this abstract pathname is the empty abstract\
+                              \ pathname then\nthe pathname string of the current\
+                              \ user directory, which is named by the\nsystem property\
+                              \ <code>user.dir</code>, is returned.  Otherwise this\n\
+                              pathname is resolved in a system-dependent way.  On\
+                              \ UNIX systems, a\nrelative pathname is made absolute\
+                              \ by resolving it against the current\nuser directory.\
+                              \  On Microsoft Windows systems, a relative pathname\
+                              \ is made absolute\nby resolving it against the current\
+                              \ directory of the drive named by the\npathname, if\
+                              \ any; if not, it is resolved against the current user\n\
+                              directory."
+                          absoluteFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the absolute form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getAbsolutePath})</code>."
+                          canonicalPath:
+                            type: "string"
+                            description: "Returns the canonical pathname string of\
+                              \ this abstract pathname.\n\n<p> A canonical pathname\
+                              \ is both absolute and unique.  The precise\ndefinition\
+                              \ of canonical form is system-dependent.  This method\
+                              \ first\nconverts this pathname to absolute form if\
+                              \ necessary, as if by invoking the\n{@link #getAbsolutePath}\
+                              \ method, and then maps it to its unique form in a\n\
+                              system-dependent way.  This typically involves removing\
+                              \ redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                              ..\"</tt> from the pathname, resolving\nsymbolic links\
+                              \ (on UNIX platforms), and converting drive letters\
+                              \ to a\nstandard case (on Microsoft Windows platforms).\n\
+                              \n<p> Every pathname that denotes an existing file or\
+                              \ directory has a\nunique canonical form.  Every pathname\
+                              \ that denotes a nonexistent file\nor directory also\
+                              \ has a unique canonical form.  The canonical form of\n\
+                              the pathname of a nonexistent file or directory may\
+                              \ be different from\nthe canonical form of the same\
+                              \ pathname after the file or directory is\ncreated.\
+                              \  Similarly, the canonical form of the pathname of\
+                              \ an existing\nfile or directory may be different from\
+                              \ the canonical form of the same\npathname after the\
+                              \ file or directory is deleted."
+                          canonicalFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the canonical form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getCanonicalPath})</code>."
+                          directory:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a\ndirectory.\n\n<p> Where it is required\
+                              \ to distinguish an I/O exception from the case\nthat\
+                              \ the file is not a directory, or where several attributes\
+                              \ of the\nsame file are required at the same time, then\
+                              \ the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          file:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a normal\nfile.  A file is <em>normal</em>\
+                              \ if it is not a directory and, in\naddition, satisfies\
+                              \ other system-dependent criteria.  Any non-directory\n\
+                              file created by a Java application is guaranteed to\
+                              \ be a normal file.\n\n<p> Where it is required to distinguish\
+                              \ an I/O exception from the case\nthat the file is not\
+                              \ a normal file, or where several attributes of the\n\
+                              same file are required at the same time, then the{@link\n\
+                              \    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          hidden:
+                            type: "boolean"
+                            description: "Tests whether the file named by this abstract\
+                              \ pathname is a hidden\nfile.  The exact definition\
+                              \ of <em>hidden</em> is system-dependent.  On\nUNIX\
+                              \ systems, a file is considered to be hidden if its\
+                              \ name begins with\na period character (<code>'.'</code>).\
+                              \  On Microsoft Windows systems, a file is\nconsidered\
+                              \ to be hidden if it has been marked as such in the\
+                              \ filesystem."
+                          lastModified:
+                            type: "integer"
+                            description: "Sets the last-modified time of the file\
+                              \ or directory named by this\nabstract pathname.\n\n\
+                              <p> All platforms support file-modification times to\
+                              \ the nearest second,\nbut some provide more precision.\
+                              \  The argument will be truncated to fit\nthe supported\
+                              \ precision.  If the operation succeeds and no intervening\n\
+                              operations on the file take place, then the next invocation\
+                              \ of the\n<code>{@link #lastModified}</code> method\
+                              \ will return the (possibly\ntruncated) <code>time</code>\
+                              \ argument that was passed to this method."
+                          writable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ write permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to modify\
+                              \ files that\ndisallow write operations.\n\n<p> An invocation\
+                              \ of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setWritable(arg, true) </pre>"
+                          readable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ read permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to read\
+                              \ files that that are\nmarked as unreadable.\n\n<p>An\
+                              \ invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setReadable(arg, true) </pre>"
+                          executable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ execute permission for this\nabstract pathname. On\
+                              \ some platforms it may be possible to start the Java\n\
+                              virtual machine with special privileges that allow it\
+                              \ to execute files\nthat are not marked executable.\n\
+                              \n<p>An invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setExecutable(arg, true) </pre>"
+                          totalSpace:
+                            type: "integer"
+                            description: "Returns the size of the partition <a href=\"\
+                              #partName\">named</a> by this\nabstract pathname."
+                            format: "int64"
+                          freeSpace:
+                            type: "integer"
+                            description: "Returns the number of unallocated bytes\
+                              \ in the partition <a\nhref=\"#partName\">named</a>\
+                              \ by this abstract path name.\n\n<p> The returned number\
+                              \ of unallocated bytes is a hint, but not\na guarantee,\
+                              \ that it is possible to use most or any of these\n\
+                              bytes.  The number of unallocated bytes is most likely\
+                              \ to be\naccurate immediately after this call.  It is\
+                              \ likely to be made\ninaccurate by any external I/O\
+                              \ operations including those made\non the system outside\
+                              \ of this virtual machine.  This method\nmakes no guarantee\
+                              \ that write operations to this file system\nwill succeed."
+                            format: "int64"
+                          usableSpace:
+                            type: "integer"
+                            description: "Returns the number of bytes available to\
+                              \ this virtual machine on the\npartition <a href=\"\
+                              #partName\">named</a> by this abstract pathname.  When\n\
+                              possible, this method checks for write permissions and\
+                              \ other operating\nsystem restrictions and will therefore\
+                              \ usually provide a more accurate\nestimate of how much\
+                              \ new data can actually be written than{@link\n    *\
+                              \ #getFreeSpace}.\n\n<p> The returned number of available\
+                              \ bytes is a hint, but not a\nguarantee, that it is\
+                              \ possible to use most or any of these bytes.  The\n\
+                              number of unallocated bytes is most likely to be accurate\
+                              \ immediately\nafter this call.  It is likely to be\
+                              \ made inaccurate by any external\nI/O operations including\
+                              \ those made on the system outside of this\nvirtual\
+                              \ machine.  This method makes no guarantee that write\
+                              \ operations\nto this file system will succeed."
+                            format: "int64"
+                        description: "Returns the abstract pathname of this abstract\
+                          \ pathname's parent,\nor <code>null</code> if this pathname\
+                          \ does not name a parent\ndirectory.\n\n<p> The <em>parent</em>\
+                          \ of an abstract pathname consists of the\npathname's prefix,\
+                          \ if any, and each name in the pathname's name\nsequence\
+                          \ except for the last.  If the name sequence is empty then\n\
+                          the pathname does not name a parent directory."
+                      absolute:
+                        type: "boolean"
+                        description: "Tests whether this abstract pathname is absolute.\
+                          \  The definition of\nabsolute pathname is system dependent.\
+                          \  On UNIX systems, a pathname is\nabsolute if its prefix\
+                          \ is <code>\"/\"</code>.  On Microsoft Windows systems,\
+                          \ a\npathname is absolute if its prefix is a drive specifier\
+                          \ followed by\n<code>\"\\\\\"</code>, or if its prefix is\
+                          \ <code>\"\\\\\\\\\"</code>."
+                      absolutePath:
+                        type: "string"
+                        description: "Returns the absolute pathname string of this\
+                          \ abstract pathname.\n\n<p> If this abstract pathname is\
+                          \ already absolute, then the pathname\nstring is simply\
+                          \ returned as if by the <code>{@link #getPath}</code>\n\
+                          method.  If this abstract pathname is the empty abstract\
+                          \ pathname then\nthe pathname string of the current user\
+                          \ directory, which is named by the\nsystem property <code>user.dir</code>,\
+                          \ is returned.  Otherwise this\npathname is resolved in\
+                          \ a system-dependent way.  On UNIX systems, a\nrelative\
+                          \ pathname is made absolute by resolving it against the\
+                          \ current\nuser directory.  On Microsoft Windows systems,\
+                          \ a relative pathname is made absolute\nby resolving it\
+                          \ against the current directory of the drive named by the\n\
+                          pathname, if any; if not, it is resolved against the current\
+                          \ user\ndirectory."
+                      absoluteFile:
+                        type: "object"
+                        properties:
+                          path:
+                            type: "string"
+                            description: "This abstract pathname's normalized pathname\
+                              \ string. A normalized\npathname string uses the default\
+                              \ name-separator character and does not\ncontain any\
+                              \ duplicate or redundant separators."
+                          name:
+                            type: "string"
+                            description: "Returns the name of the file or directory\
+                              \ denoted by this abstract\npathname.  This is just\
+                              \ the last name in the pathname's name\nsequence.  If\
+                              \ the pathname's name sequence is empty, then the empty\n\
+                              string is returned."
+                          parent:
+                            type: "string"
+                            description: "Returns the pathname string of this abstract\
+                              \ pathname's parent, or\n<code>null</code> if this pathname\
+                              \ does not name a parent directory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          parentFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the abstract pathname of this abstract\
+                              \ pathname's parent,\nor <code>null</code> if this pathname\
+                              \ does not name a parent\ndirectory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          absolute:
+                            type: "boolean"
+                            description: "Tests whether this abstract pathname is\
+                              \ absolute.  The definition of\nabsolute pathname is\
+                              \ system dependent.  On UNIX systems, a pathname is\n\
+                              absolute if its prefix is <code>\"/\"</code>.  On Microsoft\
+                              \ Windows systems, a\npathname is absolute if its prefix\
+                              \ is a drive specifier followed by\n<code>\"\\\\\"</code>,\
+                              \ or if its prefix is <code>\"\\\\\\\\\"</code>."
+                          absolutePath:
+                            type: "string"
+                            description: "Returns the absolute pathname string of\
+                              \ this abstract pathname.\n\n<p> If this abstract pathname\
+                              \ is already absolute, then the pathname\nstring is\
+                              \ simply returned as if by the <code>{@link #getPath}</code>\n\
+                              method.  If this abstract pathname is the empty abstract\
+                              \ pathname then\nthe pathname string of the current\
+                              \ user directory, which is named by the\nsystem property\
+                              \ <code>user.dir</code>, is returned.  Otherwise this\n\
+                              pathname is resolved in a system-dependent way.  On\
+                              \ UNIX systems, a\nrelative pathname is made absolute\
+                              \ by resolving it against the current\nuser directory.\
+                              \  On Microsoft Windows systems, a relative pathname\
+                              \ is made absolute\nby resolving it against the current\
+                              \ directory of the drive named by the\npathname, if\
+                              \ any; if not, it is resolved against the current user\n\
+                              directory."
+                          absoluteFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the absolute form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getAbsolutePath})</code>."
+                          canonicalPath:
+                            type: "string"
+                            description: "Returns the canonical pathname string of\
+                              \ this abstract pathname.\n\n<p> A canonical pathname\
+                              \ is both absolute and unique.  The precise\ndefinition\
+                              \ of canonical form is system-dependent.  This method\
+                              \ first\nconverts this pathname to absolute form if\
+                              \ necessary, as if by invoking the\n{@link #getAbsolutePath}\
+                              \ method, and then maps it to its unique form in a\n\
+                              system-dependent way.  This typically involves removing\
+                              \ redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                              ..\"</tt> from the pathname, resolving\nsymbolic links\
+                              \ (on UNIX platforms), and converting drive letters\
+                              \ to a\nstandard case (on Microsoft Windows platforms).\n\
+                              \n<p> Every pathname that denotes an existing file or\
+                              \ directory has a\nunique canonical form.  Every pathname\
+                              \ that denotes a nonexistent file\nor directory also\
+                              \ has a unique canonical form.  The canonical form of\n\
+                              the pathname of a nonexistent file or directory may\
+                              \ be different from\nthe canonical form of the same\
+                              \ pathname after the file or directory is\ncreated.\
+                              \  Similarly, the canonical form of the pathname of\
+                              \ an existing\nfile or directory may be different from\
+                              \ the canonical form of the same\npathname after the\
+                              \ file or directory is deleted."
+                          canonicalFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the canonical form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getCanonicalPath})</code>."
+                          directory:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a\ndirectory.\n\n<p> Where it is required\
+                              \ to distinguish an I/O exception from the case\nthat\
+                              \ the file is not a directory, or where several attributes\
+                              \ of the\nsame file are required at the same time, then\
+                              \ the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          file:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a normal\nfile.  A file is <em>normal</em>\
+                              \ if it is not a directory and, in\naddition, satisfies\
+                              \ other system-dependent criteria.  Any non-directory\n\
+                              file created by a Java application is guaranteed to\
+                              \ be a normal file.\n\n<p> Where it is required to distinguish\
+                              \ an I/O exception from the case\nthat the file is not\
+                              \ a normal file, or where several attributes of the\n\
+                              same file are required at the same time, then the{@link\n\
+                              \    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          hidden:
+                            type: "boolean"
+                            description: "Tests whether the file named by this abstract\
+                              \ pathname is a hidden\nfile.  The exact definition\
+                              \ of <em>hidden</em> is system-dependent.  On\nUNIX\
+                              \ systems, a file is considered to be hidden if its\
+                              \ name begins with\na period character (<code>'.'</code>).\
+                              \  On Microsoft Windows systems, a file is\nconsidered\
+                              \ to be hidden if it has been marked as such in the\
+                              \ filesystem."
+                          lastModified:
+                            type: "integer"
+                            description: "Sets the last-modified time of the file\
+                              \ or directory named by this\nabstract pathname.\n\n\
+                              <p> All platforms support file-modification times to\
+                              \ the nearest second,\nbut some provide more precision.\
+                              \  The argument will be truncated to fit\nthe supported\
+                              \ precision.  If the operation succeeds and no intervening\n\
+                              operations on the file take place, then the next invocation\
+                              \ of the\n<code>{@link #lastModified}</code> method\
+                              \ will return the (possibly\ntruncated) <code>time</code>\
+                              \ argument that was passed to this method."
+                          writable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ write permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to modify\
+                              \ files that\ndisallow write operations.\n\n<p> An invocation\
+                              \ of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setWritable(arg, true) </pre>"
+                          readable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ read permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to read\
+                              \ files that that are\nmarked as unreadable.\n\n<p>An\
+                              \ invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setReadable(arg, true) </pre>"
+                          executable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ execute permission for this\nabstract pathname. On\
+                              \ some platforms it may be possible to start the Java\n\
+                              virtual machine with special privileges that allow it\
+                              \ to execute files\nthat are not marked executable.\n\
+                              \n<p>An invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setExecutable(arg, true) </pre>"
+                          totalSpace:
+                            type: "integer"
+                            description: "Returns the size of the partition <a href=\"\
+                              #partName\">named</a> by this\nabstract pathname."
+                            format: "int64"
+                          freeSpace:
+                            type: "integer"
+                            description: "Returns the number of unallocated bytes\
+                              \ in the partition <a\nhref=\"#partName\">named</a>\
+                              \ by this abstract path name.\n\n<p> The returned number\
+                              \ of unallocated bytes is a hint, but not\na guarantee,\
+                              \ that it is possible to use most or any of these\n\
+                              bytes.  The number of unallocated bytes is most likely\
+                              \ to be\naccurate immediately after this call.  It is\
+                              \ likely to be made\ninaccurate by any external I/O\
+                              \ operations including those made\non the system outside\
+                              \ of this virtual machine.  This method\nmakes no guarantee\
+                              \ that write operations to this file system\nwill succeed."
+                            format: "int64"
+                          usableSpace:
+                            type: "integer"
+                            description: "Returns the number of bytes available to\
+                              \ this virtual machine on the\npartition <a href=\"\
+                              #partName\">named</a> by this abstract pathname.  When\n\
+                              possible, this method checks for write permissions and\
+                              \ other operating\nsystem restrictions and will therefore\
+                              \ usually provide a more accurate\nestimate of how much\
+                              \ new data can actually be written than{@link\n    *\
+                              \ #getFreeSpace}.\n\n<p> The returned number of available\
+                              \ bytes is a hint, but not a\nguarantee, that it is\
+                              \ possible to use most or any of these bytes.  The\n\
+                              number of unallocated bytes is most likely to be accurate\
+                              \ immediately\nafter this call.  It is likely to be\
+                              \ made inaccurate by any external\nI/O operations including\
+                              \ those made on the system outside of this\nvirtual\
+                              \ machine.  This method makes no guarantee that write\
+                              \ operations\nto this file system will succeed."
+                            format: "int64"
+                        description: "Returns the absolute form of this abstract pathname.\
+                          \  Equivalent to\n<code>new&nbsp;File(this.{@link #getAbsolutePath})</code>."
+                      canonicalPath:
+                        type: "string"
+                        description: "Returns the canonical pathname string of this\
+                          \ abstract pathname.\n\n<p> A canonical pathname is both\
+                          \ absolute and unique.  The precise\ndefinition of canonical\
+                          \ form is system-dependent.  This method first\nconverts\
+                          \ this pathname to absolute form if necessary, as if by\
+                          \ invoking the\n{@link #getAbsolutePath} method, and then\
+                          \ maps it to its unique form in a\nsystem-dependent way.\
+                          \  This typically involves removing redundant names\nsuch\
+                          \ as <tt>\".\"</tt> and <tt>\"..\"</tt> from the pathname,\
+                          \ resolving\nsymbolic links (on UNIX platforms), and converting\
+                          \ drive letters to a\nstandard case (on Microsoft Windows\
+                          \ platforms).\n\n<p> Every pathname that denotes an existing\
+                          \ file or directory has a\nunique canonical form.  Every\
+                          \ pathname that denotes a nonexistent file\nor directory\
+                          \ also has a unique canonical form.  The canonical form\
+                          \ of\nthe pathname of a nonexistent file or directory may\
+                          \ be different from\nthe canonical form of the same pathname\
+                          \ after the file or directory is\ncreated.  Similarly, the\
+                          \ canonical form of the pathname of an existing\nfile or\
+                          \ directory may be different from the canonical form of\
+                          \ the same\npathname after the file or directory is deleted."
+                      canonicalFile:
+                        type: "object"
+                        properties:
+                          path:
+                            type: "string"
+                            description: "This abstract pathname's normalized pathname\
+                              \ string. A normalized\npathname string uses the default\
+                              \ name-separator character and does not\ncontain any\
+                              \ duplicate or redundant separators."
+                          name:
+                            type: "string"
+                            description: "Returns the name of the file or directory\
+                              \ denoted by this abstract\npathname.  This is just\
+                              \ the last name in the pathname's name\nsequence.  If\
+                              \ the pathname's name sequence is empty, then the empty\n\
+                              string is returned."
+                          parent:
+                            type: "string"
+                            description: "Returns the pathname string of this abstract\
+                              \ pathname's parent, or\n<code>null</code> if this pathname\
+                              \ does not name a parent directory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          parentFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the abstract pathname of this abstract\
+                              \ pathname's parent,\nor <code>null</code> if this pathname\
+                              \ does not name a parent\ndirectory.\n\n<p> The <em>parent</em>\
+                              \ of an abstract pathname consists of the\npathname's\
+                              \ prefix, if any, and each name in the pathname's name\n\
+                              sequence except for the last.  If the name sequence\
+                              \ is empty then\nthe pathname does not name a parent\
+                              \ directory."
+                          absolute:
+                            type: "boolean"
+                            description: "Tests whether this abstract pathname is\
+                              \ absolute.  The definition of\nabsolute pathname is\
+                              \ system dependent.  On UNIX systems, a pathname is\n\
+                              absolute if its prefix is <code>\"/\"</code>.  On Microsoft\
+                              \ Windows systems, a\npathname is absolute if its prefix\
+                              \ is a drive specifier followed by\n<code>\"\\\\\"</code>,\
+                              \ or if its prefix is <code>\"\\\\\\\\\"</code>."
+                          absolutePath:
+                            type: "string"
+                            description: "Returns the absolute pathname string of\
+                              \ this abstract pathname.\n\n<p> If this abstract pathname\
+                              \ is already absolute, then the pathname\nstring is\
+                              \ simply returned as if by the <code>{@link #getPath}</code>\n\
+                              method.  If this abstract pathname is the empty abstract\
+                              \ pathname then\nthe pathname string of the current\
+                              \ user directory, which is named by the\nsystem property\
+                              \ <code>user.dir</code>, is returned.  Otherwise this\n\
+                              pathname is resolved in a system-dependent way.  On\
+                              \ UNIX systems, a\nrelative pathname is made absolute\
+                              \ by resolving it against the current\nuser directory.\
+                              \  On Microsoft Windows systems, a relative pathname\
+                              \ is made absolute\nby resolving it against the current\
+                              \ directory of the drive named by the\npathname, if\
+                              \ any; if not, it is resolved against the current user\n\
+                              directory."
+                          absoluteFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the absolute form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getAbsolutePath})</code>."
+                          canonicalPath:
+                            type: "string"
+                            description: "Returns the canonical pathname string of\
+                              \ this abstract pathname.\n\n<p> A canonical pathname\
+                              \ is both absolute and unique.  The precise\ndefinition\
+                              \ of canonical form is system-dependent.  This method\
+                              \ first\nconverts this pathname to absolute form if\
+                              \ necessary, as if by invoking the\n{@link #getAbsolutePath}\
+                              \ method, and then maps it to its unique form in a\n\
+                              system-dependent way.  This typically involves removing\
+                              \ redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                              ..\"</tt> from the pathname, resolving\nsymbolic links\
+                              \ (on UNIX platforms), and converting drive letters\
+                              \ to a\nstandard case (on Microsoft Windows platforms).\n\
+                              \n<p> Every pathname that denotes an existing file or\
+                              \ directory has a\nunique canonical form.  Every pathname\
+                              \ that denotes a nonexistent file\nor directory also\
+                              \ has a unique canonical form.  The canonical form of\n\
+                              the pathname of a nonexistent file or directory may\
+                              \ be different from\nthe canonical form of the same\
+                              \ pathname after the file or directory is\ncreated.\
+                              \  Similarly, the canonical form of the pathname of\
+                              \ an existing\nfile or directory may be different from\
+                              \ the canonical form of the same\npathname after the\
+                              \ file or directory is deleted."
+                          canonicalFile:
+                            type: "object"
+                            properties: {}
+                            description: "Returns the canonical form of this abstract\
+                              \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                              \ #getCanonicalPath})</code>."
+                          directory:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a\ndirectory.\n\n<p> Where it is required\
+                              \ to distinguish an I/O exception from the case\nthat\
+                              \ the file is not a directory, or where several attributes\
+                              \ of the\nsame file are required at the same time, then\
+                              \ the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          file:
+                            type: "boolean"
+                            description: "Tests whether the file denoted by this abstract\
+                              \ pathname is a normal\nfile.  A file is <em>normal</em>\
+                              \ if it is not a directory and, in\naddition, satisfies\
+                              \ other system-dependent criteria.  Any non-directory\n\
+                              file created by a Java application is guaranteed to\
+                              \ be a normal file.\n\n<p> Where it is required to distinguish\
+                              \ an I/O exception from the case\nthat the file is not\
+                              \ a normal file, or where several attributes of the\n\
+                              same file are required at the same time, then the{@link\n\
+                              \    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                              \    * Files.readAttributes} method may be used."
+                          hidden:
+                            type: "boolean"
+                            description: "Tests whether the file named by this abstract\
+                              \ pathname is a hidden\nfile.  The exact definition\
+                              \ of <em>hidden</em> is system-dependent.  On\nUNIX\
+                              \ systems, a file is considered to be hidden if its\
+                              \ name begins with\na period character (<code>'.'</code>).\
+                              \  On Microsoft Windows systems, a file is\nconsidered\
+                              \ to be hidden if it has been marked as such in the\
+                              \ filesystem."
+                          lastModified:
+                            type: "integer"
+                            description: "Sets the last-modified time of the file\
+                              \ or directory named by this\nabstract pathname.\n\n\
+                              <p> All platforms support file-modification times to\
+                              \ the nearest second,\nbut some provide more precision.\
+                              \  The argument will be truncated to fit\nthe supported\
+                              \ precision.  If the operation succeeds and no intervening\n\
+                              operations on the file take place, then the next invocation\
+                              \ of the\n<code>{@link #lastModified}</code> method\
+                              \ will return the (possibly\ntruncated) <code>time</code>\
+                              \ argument that was passed to this method."
+                          writable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ write permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to modify\
+                              \ files that\ndisallow write operations.\n\n<p> An invocation\
+                              \ of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setWritable(arg, true) </pre>"
+                          readable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ read permission for this abstract\npathname. On some\
+                              \ platforms it may be possible to start the Java virtual\n\
+                              machine with special privileges that allow it to read\
+                              \ files that that are\nmarked as unreadable.\n\n<p>An\
+                              \ invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setReadable(arg, true) </pre>"
+                          executable:
+                            type: "boolean"
+                            description: "A convenience method to set the owner's\
+                              \ execute permission for this\nabstract pathname. On\
+                              \ some platforms it may be possible to start the Java\n\
+                              virtual machine with special privileges that allow it\
+                              \ to execute files\nthat are not marked executable.\n\
+                              \n<p>An invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                              behaves in exactly the same way as the invocation\n\n\
+                              <pre>\n    file.setExecutable(arg, true) </pre>"
+                          totalSpace:
+                            type: "integer"
+                            description: "Returns the size of the partition <a href=\"\
+                              #partName\">named</a> by this\nabstract pathname."
+                            format: "int64"
+                          freeSpace:
+                            type: "integer"
+                            description: "Returns the number of unallocated bytes\
+                              \ in the partition <a\nhref=\"#partName\">named</a>\
+                              \ by this abstract path name.\n\n<p> The returned number\
+                              \ of unallocated bytes is a hint, but not\na guarantee,\
+                              \ that it is possible to use most or any of these\n\
+                              bytes.  The number of unallocated bytes is most likely\
+                              \ to be\naccurate immediately after this call.  It is\
+                              \ likely to be made\ninaccurate by any external I/O\
+                              \ operations including those made\non the system outside\
+                              \ of this virtual machine.  This method\nmakes no guarantee\
+                              \ that write operations to this file system\nwill succeed."
+                            format: "int64"
+                          usableSpace:
+                            type: "integer"
+                            description: "Returns the number of bytes available to\
+                              \ this virtual machine on the\npartition <a href=\"\
+                              #partName\">named</a> by this abstract pathname.  When\n\
+                              possible, this method checks for write permissions and\
+                              \ other operating\nsystem restrictions and will therefore\
+                              \ usually provide a more accurate\nestimate of how much\
+                              \ new data can actually be written than{@link\n    *\
+                              \ #getFreeSpace}.\n\n<p> The returned number of available\
+                              \ bytes is a hint, but not a\nguarantee, that it is\
+                              \ possible to use most or any of these bytes.  The\n\
+                              number of unallocated bytes is most likely to be accurate\
+                              \ immediately\nafter this call.  It is likely to be\
+                              \ made inaccurate by any external\nI/O operations including\
+                              \ those made on the system outside of this\nvirtual\
+                              \ machine.  This method makes no guarantee that write\
+                              \ operations\nto this file system will succeed."
+                            format: "int64"
+                        description: "Returns the canonical form of this abstract\
+                          \ pathname.  Equivalent to\n<code>new&nbsp;File(this.{@link\
+                          \ #getCanonicalPath})</code>."
+                      directory:
+                        type: "boolean"
+                        description: "Tests whether the file denoted by this abstract\
+                          \ pathname is a\ndirectory.\n\n<p> Where it is required\
+                          \ to distinguish an I/O exception from the case\nthat the\
+                          \ file is not a directory, or where several attributes of\
+                          \ the\nsame file are required at the same time, then the{@link\n\
+                          \    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                          \    * Files.readAttributes} method may be used."
+                      file:
+                        type: "boolean"
+                        description: "Tests whether the file denoted by this abstract\
+                          \ pathname is a normal\nfile.  A file is <em>normal</em>\
+                          \ if it is not a directory and, in\naddition, satisfies\
+                          \ other system-dependent criteria.  Any non-directory\n\
+                          file created by a Java application is guaranteed to be a\
+                          \ normal file.\n\n<p> Where it is required to distinguish\
+                          \ an I/O exception from the case\nthat the file is not a\
+                          \ normal file, or where several attributes of the\nsame\
+                          \ file are required at the same time, then the{@link\n \
+                          \   * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                          \    * Files.readAttributes} method may be used."
+                      hidden:
+                        type: "boolean"
+                        description: "Tests whether the file named by this abstract\
+                          \ pathname is a hidden\nfile.  The exact definition of <em>hidden</em>\
+                          \ is system-dependent.  On\nUNIX systems, a file is considered\
+                          \ to be hidden if its name begins with\na period character\
+                          \ (<code>'.'</code>).  On Microsoft Windows systems, a file\
+                          \ is\nconsidered to be hidden if it has been marked as such\
+                          \ in the filesystem."
+                      lastModified:
+                        type: "integer"
+                        description: "Sets the last-modified time of the file or directory\
+                          \ named by this\nabstract pathname.\n\n<p> All platforms\
+                          \ support file-modification times to the nearest second,\n\
+                          but some provide more precision.  The argument will be truncated\
+                          \ to fit\nthe supported precision.  If the operation succeeds\
+                          \ and no intervening\noperations on the file take place,\
+                          \ then the next invocation of the\n<code>{@link #lastModified}</code>\
+                          \ method will return the (possibly\ntruncated) <code>time</code>\
+                          \ argument that was passed to this method."
+                      writable:
+                        type: "boolean"
+                        description: "A convenience method to set the owner's write\
+                          \ permission for this abstract\npathname. On some platforms\
+                          \ it may be possible to start the Java virtual\nmachine\
+                          \ with special privileges that allow it to modify files\
+                          \ that\ndisallow write operations.\n\n<p> An invocation\
+                          \ of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                          behaves in exactly the same way as the invocation\n\n<pre>\n\
+                          \    file.setWritable(arg, true) </pre>"
+                      readable:
+                        type: "boolean"
+                        description: "A convenience method to set the owner's read\
+                          \ permission for this abstract\npathname. On some platforms\
+                          \ it may be possible to start the Java virtual\nmachine\
+                          \ with special privileges that allow it to read files that\
+                          \ that are\nmarked as unreadable.\n\n<p>An invocation of\
+                          \ this method of the form <tt>file.setReadable(arg)</tt>\n\
+                          behaves in exactly the same way as the invocation\n\n<pre>\n\
+                          \    file.setReadable(arg, true) </pre>"
+                      executable:
+                        type: "boolean"
+                        description: "A convenience method to set the owner's execute\
+                          \ permission for this\nabstract pathname. On some platforms\
+                          \ it may be possible to start the Java\nvirtual machine\
+                          \ with special privileges that allow it to execute files\n\
+                          that are not marked executable.\n\n<p>An invocation of this\
+                          \ method of the form <tt>file.setExcutable(arg)</tt>\nbehaves\
+                          \ in exactly the same way as the invocation\n\n<pre>\n \
+                          \   file.setExecutable(arg, true) </pre>"
+                      totalSpace:
+                        type: "integer"
+                        description: "Returns the size of the partition <a href=\"\
+                          #partName\">named</a> by this\nabstract pathname."
+                        format: "int64"
+                      freeSpace:
+                        type: "integer"
+                        description: "Returns the number of unallocated bytes in the\
+                          \ partition <a\nhref=\"#partName\">named</a> by this abstract\
+                          \ path name.\n\n<p> The returned number of unallocated bytes\
+                          \ is a hint, but not\na guarantee, that it is possible to\
+                          \ use most or any of these\nbytes.  The number of unallocated\
+                          \ bytes is most likely to be\naccurate immediately after\
+                          \ this call.  It is likely to be made\ninaccurate by any\
+                          \ external I/O operations including those made\non the system\
+                          \ outside of this virtual machine.  This method\nmakes no\
+                          \ guarantee that write operations to this file system\n\
+                          will succeed."
+                        format: "int64"
+                      usableSpace:
+                        type: "integer"
+                        description: "Returns the number of bytes available to this\
+                          \ virtual machine on the\npartition <a href=\"#partName\"\
+                          >named</a> by this abstract pathname.  When\npossible, this\
+                          \ method checks for write permissions and other operating\n\
+                          system restrictions and will therefore usually provide a\
+                          \ more accurate\nestimate of how much new data can actually\
+                          \ be written than{@link\n    * #getFreeSpace}.\n\n<p> The\
+                          \ returned number of available bytes is a hint, but not\
+                          \ a\nguarantee, that it is possible to use most or any of\
+                          \ these bytes.  The\nnumber of unallocated bytes is most\
+                          \ likely to be accurate immediately\nafter this call.  It\
+                          \ is likely to be made inaccurate by any external\nI/O operations\
+                          \ including those made on the system outside of this\nvirtual\
+                          \ machine.  This method makes no guarantee that write operations\n\
+                          to this file system will succeed."
+                        format: "int64"
+                    description: "java.io.File"
+                  uRL:
+                    type: "string"
+                  uRI:
+                    type: "object"
+                    properties:
+                      string:
+                        type: "string"
+                        description: "The string form of this URI."
+                      absolute:
+                        type: "boolean"
+                        description: "Tells whether or not this URI is absolute.\n\
+                          \n<p> A URI is absolute if, and only if, it has a scheme\
+                          \ component. </p>"
+                      opaque:
+                        type: "boolean"
+                        description: "Tells whether or not this URI is opaque.\n\n\
+                          <p> A URI is opaque if, and only if, it is absolute and\
+                          \ its\nscheme-specific part does not begin with a slash\
+                          \ character ('/').\nAn opaque URI has a scheme, a scheme-specific\
+                          \ part, and possibly\na fragment; all other components are\
+                          \ undefined. </p>"
+                      rawSchemeSpecificPart:
+                        type: "string"
+                        description: "Returns the raw scheme-specific part of this\
+                          \ URI.  The scheme-specific\npart is never undefined, though\
+                          \ it may be empty.\n\n<p> The scheme-specific part of a\
+                          \ URI only contains legal URI\ncharacters. </p>"
+                      rawAuthority:
+                        type: "string"
+                        description: "Returns the raw authority component of this\
+                          \ URI.\n\n<p> The authority component of a URI, if defined,\
+                          \ only contains the\ncommercial-at character ({@code '@'})\
+                          \ and characters in the\n<i>unreserved</i>, <i>punct</i>,\
+                          \ <i>escaped</i>, and <i>other</i>\ncategories.  If the\
+                          \ authority is server-based then it is further\nconstrained\
+                          \ to have valid user-information, host, and port\ncomponents.\
+                          \ </p>"
+                      rawUserInfo:
+                        type: "string"
+                        description: "Returns the raw user-information component of\
+                          \ this URI.\n\n<p> The user-information component of a URI,\
+                          \ if defined, only contains\ncharacters in the <i>unreserved</i>,\
+                          \ <i>punct</i>, <i>escaped</i>, and\n<i>other</i> categories.\
+                          \ </p>"
+                      rawPath:
+                        type: "string"
+                        description: "Returns the raw path component of this URI.\n\
+                          \n<p> The path component of a URI, if defined, only contains\
+                          \ the slash\ncharacter ({@code '/'}), the commercial-at\
+                          \ character ({@code '@'}),\nand characters in the <i>unreserved</i>,\
+                          \ <i>punct</i>, <i>escaped</i>,\nand <i>other</i> categories.\
+                          \ </p>"
+                      rawQuery:
+                        type: "string"
+                        description: "Returns the raw query component of this URI.\n\
+                          \n<p> The query component of a URI, if defined, only contains\
+                          \ legal URI\ncharacters. </p>"
+                      rawFragment:
+                        type: "string"
+                        description: "Returns the raw fragment component of this URI.\n\
+                          \n<p> The fragment component of a URI, if defined, only\
+                          \ contains legal URI\ncharacters. </p>"
+                    description: "java.net.URI"
+                  filename:
+                    type: "string"
+                    nullable: true
+                  description:
+                    type: "string"
+  /api/v1/room/getAll:
+    post:
+      summary: "getAllRoomsExtendedInfo"
+      description: "getAllRoomsExtendedInfo"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    message:
+                      type: "string"
+                      description: ""
+                    roomName:
+                      type: "string"
+                      description: ""
+                    bacNetNetworkNumber:
+                      type: "integer"
+                      description: ""
+                    bacNetInstanceNumber:
+                      type: "integer"
+                      description: ""
+                    floorName:
+                      type: "string"
+                      description: ""
+                    online:
+                      type: "boolean"
+                      description: ""
+                    availability:
+                      type: "string"
+                      description: ""
+                    cleanliness:
+                      type: "string"
+                      description: ""
+  /api/v1/room/group/getAll:
+    post:
+      summary: "getRoomGroupsInfo"
+      description: "getRoomGroupsInfo"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: "object"
+              properties:
+                username:
+                  type: "string"
+                  description: ""
+                password:
+                  type: "string"
+                  description: ""
+                roomGroupName:
+                  type: "string"
+                  description: ""
+              description: ""
+      responses:
+        "200":
+          description: ""
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  type: "object"
+                  properties:
+                    message:
+                      type: "string"
+                      description: ""
+                    roomGroupName:
+                      type: "string"
+                      description: ""
+                    roomNames:
+                      type: "array"
+                      description: ""
+                      items:
+                        type: "string"
+  /api/v1/subscribeToUpdates/{webhookSuffix}:
+    post:
+      summary: "Subscribe to Webhook Updates"
+      description: "Registers a webhook to receive updates for the given webhook type."
+      parameters:
+        - name: webhookSuffix
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The type of updates to subscribe to (e.g., 'parameterValues')."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookRequest"
+      responses:
+        "200":
+          description: "Webhook successfully registered."
+        "404":
+          description: "Webhook type not found."
+
+  /api/v1/unsubscribeFromUpdates/{webhookSuffix}:
+    post:
+      summary: "Unsubscribe from Webhook Updates"
+      description: "Removes a webhook subscription for the given webhook type."
+      parameters:
+        - name: webhookSuffix
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "The type of updates to unsubscribe from (e.g., 'parameterValues')."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookRequest"
+      responses:
+        "200":
+          description: "Webhook successfully unregistered."
+        "404":
+          description: "Webhook type not found."
+webhooks:
+  parameterValues:
+    post:
+      summary: "Parameter Value Updates"
+      description: "Webhook that sends parameter value updates."
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ParameterValueDto"
+      responses:
+        "200":
+          description: "Webhook received successfully."
+components:
+  schemas:
+    WebhookRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          nullable: false
+          description: "Username for authentication."
+        password:
+          type: string
+          nullable: false
+          description: "Password for authentication."
+        url:
+          type: string
+          format: uri
+          nullable: false
+          description: "The URL to receive webhook updates."
+    ParameterValueDto:
+      type: object
+      properties:
+        roomName:
+          type: string
+          description: "The name of the room."
+        value:
+          type: string
+          description: "The updated parameter value."
+    java.io.InputStream:
+      type: "object"
+      properties: {}
+      description: "java.io.InputStream"
+    java.io.File:
+      type: "object"
+      properties:
+        path:
+          type: "string"
+          description: "This abstract pathname's normalized pathname string. A normalized\n\
+            pathname string uses the default name-separator character and does not\n\
+            contain any duplicate or redundant separators."
+        name:
+          type: "string"
+          description: "Returns the name of the file or directory denoted by this\
+            \ abstract\npathname.  This is just the last name in the pathname's name\n\
+            sequence.  If the pathname's name sequence is empty, then the empty\n\
+            string is returned."
+        parent:
+          type: "string"
+          description: "Returns the pathname string of this abstract pathname's parent,\
+            \ or\n<code>null</code> if this pathname does not name a parent directory.\n\
+            \n<p> The <em>parent</em> of an abstract pathname consists of the\npathname's\
+            \ prefix, if any, and each name in the pathname's name\nsequence except\
+            \ for the last.  If the name sequence is empty then\nthe pathname does\
+            \ not name a parent directory."
+        parentFile:
+          type: "object"
+          properties:
+            path:
+              type: "string"
+              description: "This abstract pathname's normalized pathname string. A\
+                \ normalized\npathname string uses the default name-separator character\
+                \ and does not\ncontain any duplicate or redundant separators."
+            name:
+              type: "string"
+              description: "Returns the name of the file or directory denoted by this\
+                \ abstract\npathname.  This is just the last name in the pathname's\
+                \ name\nsequence.  If the pathname's name sequence is empty, then\
+                \ the empty\nstring is returned."
+            parent:
+              type: "string"
+              description: "Returns the pathname string of this abstract pathname's\
+                \ parent, or\n<code>null</code> if this pathname does not name a parent\
+                \ directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            parentFile:
+              type: "object"
+              properties: {}
+              description: "Returns the abstract pathname of this abstract pathname's\
+                \ parent,\nor <code>null</code> if this pathname does not name a parent\n\
+                directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            absolute:
+              type: "boolean"
+              description: "Tests whether this abstract pathname is absolute.  The\
+                \ definition of\nabsolute pathname is system dependent.  On UNIX systems,\
+                \ a pathname is\nabsolute if its prefix is <code>\"/\"</code>.  On\
+                \ Microsoft Windows systems, a\npathname is absolute if its prefix\
+                \ is a drive specifier followed by\n<code>\"\\\\\"</code>, or if its\
+                \ prefix is <code>\"\\\\\\\\\"</code>."
+            absolutePath:
+              type: "string"
+              description: "Returns the absolute pathname string of this abstract\
+                \ pathname.\n\n<p> If this abstract pathname is already absolute,\
+                \ then the pathname\nstring is simply returned as if by the <code>{@link\
+                \ #getPath}</code>\nmethod.  If this abstract pathname is the empty\
+                \ abstract pathname then\nthe pathname string of the current user\
+                \ directory, which is named by the\nsystem property <code>user.dir</code>,\
+                \ is returned.  Otherwise this\npathname is resolved in a system-dependent\
+                \ way.  On UNIX systems, a\nrelative pathname is made absolute by\
+                \ resolving it against the current\nuser directory.  On Microsoft\
+                \ Windows systems, a relative pathname is made absolute\nby resolving\
+                \ it against the current directory of the drive named by the\npathname,\
+                \ if any; if not, it is resolved against the current user\ndirectory."
+            absoluteFile:
+              type: "object"
+              properties: {}
+              description: "Returns the absolute form of this abstract pathname. \
+                \ Equivalent to\n<code>new&nbsp;File(this.{@link #getAbsolutePath})</code>."
+            canonicalPath:
+              type: "string"
+              description: "Returns the canonical pathname string of this abstract\
+                \ pathname.\n\n<p> A canonical pathname is both absolute and unique.\
+                \  The precise\ndefinition of canonical form is system-dependent.\
+                \  This method first\nconverts this pathname to absolute form if necessary,\
+                \ as if by invoking the\n{@link #getAbsolutePath} method, and then\
+                \ maps it to its unique form in a\nsystem-dependent way.  This typically\
+                \ involves removing redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                ..\"</tt> from the pathname, resolving\nsymbolic links (on UNIX platforms),\
+                \ and converting drive letters to a\nstandard case (on Microsoft Windows\
+                \ platforms).\n\n<p> Every pathname that denotes an existing file\
+                \ or directory has a\nunique canonical form.  Every pathname that\
+                \ denotes a nonexistent file\nor directory also has a unique canonical\
+                \ form.  The canonical form of\nthe pathname of a nonexistent file\
+                \ or directory may be different from\nthe canonical form of the same\
+                \ pathname after the file or directory is\ncreated.  Similarly, the\
+                \ canonical form of the pathname of an existing\nfile or directory\
+                \ may be different from the canonical form of the same\npathname after\
+                \ the file or directory is deleted."
+            canonicalFile:
+              type: "object"
+              properties: {}
+              description: "Returns the canonical form of this abstract pathname.\
+                \  Equivalent to\n<code>new&nbsp;File(this.{@link #getCanonicalPath})</code>."
+            directory:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a\ndirectory.\n\n<p> Where it is required to distinguish an I/O\
+                \ exception from the case\nthat the file is not a directory, or where\
+                \ several attributes of the\nsame file are required at the same time,\
+                \ then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            file:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a normal\nfile.  A file is <em>normal</em> if it is not a directory\
+                \ and, in\naddition, satisfies other system-dependent criteria.  Any\
+                \ non-directory\nfile created by a Java application is guaranteed\
+                \ to be a normal file.\n\n<p> Where it is required to distinguish\
+                \ an I/O exception from the case\nthat the file is not a normal file,\
+                \ or where several attributes of the\nsame file are required at the\
+                \ same time, then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            hidden:
+              type: "boolean"
+              description: "Tests whether the file named by this abstract pathname\
+                \ is a hidden\nfile.  The exact definition of <em>hidden</em> is system-dependent.\
+                \  On\nUNIX systems, a file is considered to be hidden if its name\
+                \ begins with\na period character (<code>'.'</code>).  On Microsoft\
+                \ Windows systems, a file is\nconsidered to be hidden if it has been\
+                \ marked as such in the filesystem."
+            lastModified:
+              type: "integer"
+              description: "Sets the last-modified time of the file or directory named\
+                \ by this\nabstract pathname.\n\n<p> All platforms support file-modification\
+                \ times to the nearest second,\nbut some provide more precision. \
+                \ The argument will be truncated to fit\nthe supported precision.\
+                \  If the operation succeeds and no intervening\noperations on the\
+                \ file take place, then the next invocation of the\n<code>{@link #lastModified}</code>\
+                \ method will return the (possibly\ntruncated) <code>time</code> argument\
+                \ that was passed to this method."
+            writable:
+              type: "boolean"
+              description: "A convenience method to set the owner's write permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to modify files that\ndisallow write operations.\n\n<p>\
+                \ An invocation of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setWritable(arg,\
+                \ true) </pre>"
+            readable:
+              type: "boolean"
+              description: "A convenience method to set the owner's read permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to read files that that are\nmarked as unreadable.\n\n\
+                <p>An invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setReadable(arg,\
+                \ true) </pre>"
+            executable:
+              type: "boolean"
+              description: "A convenience method to set the owner's execute permission\
+                \ for this\nabstract pathname. On some platforms it may be possible\
+                \ to start the Java\nvirtual machine with special privileges that\
+                \ allow it to execute files\nthat are not marked executable.\n\n<p>An\
+                \ invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setExecutable(arg,\
+                \ true) </pre>"
+            totalSpace:
+              type: "integer"
+              description: "Returns the size of the partition <a href=\"#partName\"\
+                >named</a> by this\nabstract pathname."
+              format: "int64"
+            freeSpace:
+              type: "integer"
+              description: "Returns the number of unallocated bytes in the partition\
+                \ <a\nhref=\"#partName\">named</a> by this abstract path name.\n\n\
+                <p> The returned number of unallocated bytes is a hint, but not\n\
+                a guarantee, that it is possible to use most or any of these\nbytes.\
+                \  The number of unallocated bytes is most likely to be\naccurate\
+                \ immediately after this call.  It is likely to be made\ninaccurate\
+                \ by any external I/O operations including those made\non the system\
+                \ outside of this virtual machine.  This method\nmakes no guarantee\
+                \ that write operations to this file system\nwill succeed."
+              format: "int64"
+            usableSpace:
+              type: "integer"
+              description: "Returns the number of bytes available to this virtual\
+                \ machine on the\npartition <a href=\"#partName\">named</a> by this\
+                \ abstract pathname.  When\npossible, this method checks for write\
+                \ permissions and other operating\nsystem restrictions and will therefore\
+                \ usually provide a more accurate\nestimate of how much new data can\
+                \ actually be written than{@link\n    * #getFreeSpace}.\n\n<p> The\
+                \ returned number of available bytes is a hint, but not a\nguarantee,\
+                \ that it is possible to use most or any of these bytes.  The\nnumber\
+                \ of unallocated bytes is most likely to be accurate immediately\n\
+                after this call.  It is likely to be made inaccurate by any external\n\
+                I/O operations including those made on the system outside of this\n\
+                virtual machine.  This method makes no guarantee that write operations\n\
+                to this file system will succeed."
+              format: "int64"
+          description: "Returns the abstract pathname of this abstract pathname's\
+            \ parent,\nor <code>null</code> if this pathname does not name a parent\n\
+            directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+            \ of the\npathname's prefix, if any, and each name in the pathname's name\n\
+            sequence except for the last.  If the name sequence is empty then\nthe\
+            \ pathname does not name a parent directory."
+        absolute:
+          type: "boolean"
+          description: "Tests whether this abstract pathname is absolute.  The definition\
+            \ of\nabsolute pathname is system dependent.  On UNIX systems, a pathname\
+            \ is\nabsolute if its prefix is <code>\"/\"</code>.  On Microsoft Windows\
+            \ systems, a\npathname is absolute if its prefix is a drive specifier\
+            \ followed by\n<code>\"\\\\\"</code>, or if its prefix is <code>\"\\\\\
+            \\\\\"</code>."
+        absolutePath:
+          type: "string"
+          description: "Returns the absolute pathname string of this abstract pathname.\n\
+            \n<p> If this abstract pathname is already absolute, then the pathname\n\
+            string is simply returned as if by the <code>{@link #getPath}</code>\n\
+            method.  If this abstract pathname is the empty abstract pathname then\n\
+            the pathname string of the current user directory, which is named by the\n\
+            system property <code>user.dir</code>, is returned.  Otherwise this\n\
+            pathname is resolved in a system-dependent way.  On UNIX systems, a\n\
+            relative pathname is made absolute by resolving it against the current\n\
+            user directory.  On Microsoft Windows systems, a relative pathname is\
+            \ made absolute\nby resolving it against the current directory of the\
+            \ drive named by the\npathname, if any; if not, it is resolved against\
+            \ the current user\ndirectory."
+        absoluteFile:
+          type: "object"
+          properties:
+            path:
+              type: "string"
+              description: "This abstract pathname's normalized pathname string. A\
+                \ normalized\npathname string uses the default name-separator character\
+                \ and does not\ncontain any duplicate or redundant separators."
+            name:
+              type: "string"
+              description: "Returns the name of the file or directory denoted by this\
+                \ abstract\npathname.  This is just the last name in the pathname's\
+                \ name\nsequence.  If the pathname's name sequence is empty, then\
+                \ the empty\nstring is returned."
+            parent:
+              type: "string"
+              description: "Returns the pathname string of this abstract pathname's\
+                \ parent, or\n<code>null</code> if this pathname does not name a parent\
+                \ directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            parentFile:
+              type: "object"
+              properties: {}
+              description: "Returns the abstract pathname of this abstract pathname's\
+                \ parent,\nor <code>null</code> if this pathname does not name a parent\n\
+                directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            absolute:
+              type: "boolean"
+              description: "Tests whether this abstract pathname is absolute.  The\
+                \ definition of\nabsolute pathname is system dependent.  On UNIX systems,\
+                \ a pathname is\nabsolute if its prefix is <code>\"/\"</code>.  On\
+                \ Microsoft Windows systems, a\npathname is absolute if its prefix\
+                \ is a drive specifier followed by\n<code>\"\\\\\"</code>, or if its\
+                \ prefix is <code>\"\\\\\\\\\"</code>."
+            absolutePath:
+              type: "string"
+              description: "Returns the absolute pathname string of this abstract\
+                \ pathname.\n\n<p> If this abstract pathname is already absolute,\
+                \ then the pathname\nstring is simply returned as if by the <code>{@link\
+                \ #getPath}</code>\nmethod.  If this abstract pathname is the empty\
+                \ abstract pathname then\nthe pathname string of the current user\
+                \ directory, which is named by the\nsystem property <code>user.dir</code>,\
+                \ is returned.  Otherwise this\npathname is resolved in a system-dependent\
+                \ way.  On UNIX systems, a\nrelative pathname is made absolute by\
+                \ resolving it against the current\nuser directory.  On Microsoft\
+                \ Windows systems, a relative pathname is made absolute\nby resolving\
+                \ it against the current directory of the drive named by the\npathname,\
+                \ if any; if not, it is resolved against the current user\ndirectory."
+            absoluteFile:
+              type: "object"
+              properties: {}
+              description: "Returns the absolute form of this abstract pathname. \
+                \ Equivalent to\n<code>new&nbsp;File(this.{@link #getAbsolutePath})</code>."
+            canonicalPath:
+              type: "string"
+              description: "Returns the canonical pathname string of this abstract\
+                \ pathname.\n\n<p> A canonical pathname is both absolute and unique.\
+                \  The precise\ndefinition of canonical form is system-dependent.\
+                \  This method first\nconverts this pathname to absolute form if necessary,\
+                \ as if by invoking the\n{@link #getAbsolutePath} method, and then\
+                \ maps it to its unique form in a\nsystem-dependent way.  This typically\
+                \ involves removing redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                ..\"</tt> from the pathname, resolving\nsymbolic links (on UNIX platforms),\
+                \ and converting drive letters to a\nstandard case (on Microsoft Windows\
+                \ platforms).\n\n<p> Every pathname that denotes an existing file\
+                \ or directory has a\nunique canonical form.  Every pathname that\
+                \ denotes a nonexistent file\nor directory also has a unique canonical\
+                \ form.  The canonical form of\nthe pathname of a nonexistent file\
+                \ or directory may be different from\nthe canonical form of the same\
+                \ pathname after the file or directory is\ncreated.  Similarly, the\
+                \ canonical form of the pathname of an existing\nfile or directory\
+                \ may be different from the canonical form of the same\npathname after\
+                \ the file or directory is deleted."
+            canonicalFile:
+              type: "object"
+              properties: {}
+              description: "Returns the canonical form of this abstract pathname.\
+                \  Equivalent to\n<code>new&nbsp;File(this.{@link #getCanonicalPath})</code>."
+            directory:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a\ndirectory.\n\n<p> Where it is required to distinguish an I/O\
+                \ exception from the case\nthat the file is not a directory, or where\
+                \ several attributes of the\nsame file are required at the same time,\
+                \ then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            file:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a normal\nfile.  A file is <em>normal</em> if it is not a directory\
+                \ and, in\naddition, satisfies other system-dependent criteria.  Any\
+                \ non-directory\nfile created by a Java application is guaranteed\
+                \ to be a normal file.\n\n<p> Where it is required to distinguish\
+                \ an I/O exception from the case\nthat the file is not a normal file,\
+                \ or where several attributes of the\nsame file are required at the\
+                \ same time, then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            hidden:
+              type: "boolean"
+              description: "Tests whether the file named by this abstract pathname\
+                \ is a hidden\nfile.  The exact definition of <em>hidden</em> is system-dependent.\
+                \  On\nUNIX systems, a file is considered to be hidden if its name\
+                \ begins with\na period character (<code>'.'</code>).  On Microsoft\
+                \ Windows systems, a file is\nconsidered to be hidden if it has been\
+                \ marked as such in the filesystem."
+            lastModified:
+              type: "integer"
+              description: "Sets the last-modified time of the file or directory named\
+                \ by this\nabstract pathname.\n\n<p> All platforms support file-modification\
+                \ times to the nearest second,\nbut some provide more precision. \
+                \ The argument will be truncated to fit\nthe supported precision.\
+                \  If the operation succeeds and no intervening\noperations on the\
+                \ file take place, then the next invocation of the\n<code>{@link #lastModified}</code>\
+                \ method will return the (possibly\ntruncated) <code>time</code> argument\
+                \ that was passed to this method."
+            writable:
+              type: "boolean"
+              description: "A convenience method to set the owner's write permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to modify files that\ndisallow write operations.\n\n<p>\
+                \ An invocation of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setWritable(arg,\
+                \ true) </pre>"
+            readable:
+              type: "boolean"
+              description: "A convenience method to set the owner's read permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to read files that that are\nmarked as unreadable.\n\n\
+                <p>An invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setReadable(arg,\
+                \ true) </pre>"
+            executable:
+              type: "boolean"
+              description: "A convenience method to set the owner's execute permission\
+                \ for this\nabstract pathname. On some platforms it may be possible\
+                \ to start the Java\nvirtual machine with special privileges that\
+                \ allow it to execute files\nthat are not marked executable.\n\n<p>An\
+                \ invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setExecutable(arg,\
+                \ true) </pre>"
+            totalSpace:
+              type: "integer"
+              description: "Returns the size of the partition <a href=\"#partName\"\
+                >named</a> by this\nabstract pathname."
+              format: "int64"
+            freeSpace:
+              type: "integer"
+              description: "Returns the number of unallocated bytes in the partition\
+                \ <a\nhref=\"#partName\">named</a> by this abstract path name.\n\n\
+                <p> The returned number of unallocated bytes is a hint, but not\n\
+                a guarantee, that it is possible to use most or any of these\nbytes.\
+                \  The number of unallocated bytes is most likely to be\naccurate\
+                \ immediately after this call.  It is likely to be made\ninaccurate\
+                \ by any external I/O operations including those made\non the system\
+                \ outside of this virtual machine.  This method\nmakes no guarantee\
+                \ that write operations to this file system\nwill succeed."
+              format: "int64"
+            usableSpace:
+              type: "integer"
+              description: "Returns the number of bytes available to this virtual\
+                \ machine on the\npartition <a href=\"#partName\">named</a> by this\
+                \ abstract pathname.  When\npossible, this method checks for write\
+                \ permissions and other operating\nsystem restrictions and will therefore\
+                \ usually provide a more accurate\nestimate of how much new data can\
+                \ actually be written than{@link\n    * #getFreeSpace}.\n\n<p> The\
+                \ returned number of available bytes is a hint, but not a\nguarantee,\
+                \ that it is possible to use most or any of these bytes.  The\nnumber\
+                \ of unallocated bytes is most likely to be accurate immediately\n\
+                after this call.  It is likely to be made inaccurate by any external\n\
+                I/O operations including those made on the system outside of this\n\
+                virtual machine.  This method makes no guarantee that write operations\n\
+                to this file system will succeed."
+              format: "int64"
+          description: "Returns the absolute form of this abstract pathname.  Equivalent\
+            \ to\n<code>new&nbsp;File(this.{@link #getAbsolutePath})</code>."
+        canonicalPath:
+          type: "string"
+          description: "Returns the canonical pathname string of this abstract pathname.\n\
+            \n<p> A canonical pathname is both absolute and unique.  The precise\n\
+            definition of canonical form is system-dependent.  This method first\n\
+            converts this pathname to absolute form if necessary, as if by invoking\
+            \ the\n{@link #getAbsolutePath} method, and then maps it to its unique\
+            \ form in a\nsystem-dependent way.  This typically involves removing redundant\
+            \ names\nsuch as <tt>\".\"</tt> and <tt>\"..\"</tt> from the pathname,\
+            \ resolving\nsymbolic links (on UNIX platforms), and converting drive\
+            \ letters to a\nstandard case (on Microsoft Windows platforms).\n\n<p>\
+            \ Every pathname that denotes an existing file or directory has a\nunique\
+            \ canonical form.  Every pathname that denotes a nonexistent file\nor\
+            \ directory also has a unique canonical form.  The canonical form of\n\
+            the pathname of a nonexistent file or directory may be different from\n\
+            the canonical form of the same pathname after the file or directory is\n\
+            created.  Similarly, the canonical form of the pathname of an existing\n\
+            file or directory may be different from the canonical form of the same\n\
+            pathname after the file or directory is deleted."
+        canonicalFile:
+          type: "object"
+          properties:
+            path:
+              type: "string"
+              description: "This abstract pathname's normalized pathname string. A\
+                \ normalized\npathname string uses the default name-separator character\
+                \ and does not\ncontain any duplicate or redundant separators."
+            name:
+              type: "string"
+              description: "Returns the name of the file or directory denoted by this\
+                \ abstract\npathname.  This is just the last name in the pathname's\
+                \ name\nsequence.  If the pathname's name sequence is empty, then\
+                \ the empty\nstring is returned."
+            parent:
+              type: "string"
+              description: "Returns the pathname string of this abstract pathname's\
+                \ parent, or\n<code>null</code> if this pathname does not name a parent\
+                \ directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            parentFile:
+              type: "object"
+              properties: {}
+              description: "Returns the abstract pathname of this abstract pathname's\
+                \ parent,\nor <code>null</code> if this pathname does not name a parent\n\
+                directory.\n\n<p> The <em>parent</em> of an abstract pathname consists\
+                \ of the\npathname's prefix, if any, and each name in the pathname's\
+                \ name\nsequence except for the last.  If the name sequence is empty\
+                \ then\nthe pathname does not name a parent directory."
+            absolute:
+              type: "boolean"
+              description: "Tests whether this abstract pathname is absolute.  The\
+                \ definition of\nabsolute pathname is system dependent.  On UNIX systems,\
+                \ a pathname is\nabsolute if its prefix is <code>\"/\"</code>.  On\
+                \ Microsoft Windows systems, a\npathname is absolute if its prefix\
+                \ is a drive specifier followed by\n<code>\"\\\\\"</code>, or if its\
+                \ prefix is <code>\"\\\\\\\\\"</code>."
+            absolutePath:
+              type: "string"
+              description: "Returns the absolute pathname string of this abstract\
+                \ pathname.\n\n<p> If this abstract pathname is already absolute,\
+                \ then the pathname\nstring is simply returned as if by the <code>{@link\
+                \ #getPath}</code>\nmethod.  If this abstract pathname is the empty\
+                \ abstract pathname then\nthe pathname string of the current user\
+                \ directory, which is named by the\nsystem property <code>user.dir</code>,\
+                \ is returned.  Otherwise this\npathname is resolved in a system-dependent\
+                \ way.  On UNIX systems, a\nrelative pathname is made absolute by\
+                \ resolving it against the current\nuser directory.  On Microsoft\
+                \ Windows systems, a relative pathname is made absolute\nby resolving\
+                \ it against the current directory of the drive named by the\npathname,\
+                \ if any; if not, it is resolved against the current user\ndirectory."
+            absoluteFile:
+              type: "object"
+              properties: {}
+              description: "Returns the absolute form of this abstract pathname. \
+                \ Equivalent to\n<code>new&nbsp;File(this.{@link #getAbsolutePath})</code>."
+            canonicalPath:
+              type: "string"
+              description: "Returns the canonical pathname string of this abstract\
+                \ pathname.\n\n<p> A canonical pathname is both absolute and unique.\
+                \  The precise\ndefinition of canonical form is system-dependent.\
+                \  This method first\nconverts this pathname to absolute form if necessary,\
+                \ as if by invoking the\n{@link #getAbsolutePath} method, and then\
+                \ maps it to its unique form in a\nsystem-dependent way.  This typically\
+                \ involves removing redundant names\nsuch as <tt>\".\"</tt> and <tt>\"\
+                ..\"</tt> from the pathname, resolving\nsymbolic links (on UNIX platforms),\
+                \ and converting drive letters to a\nstandard case (on Microsoft Windows\
+                \ platforms).\n\n<p> Every pathname that denotes an existing file\
+                \ or directory has a\nunique canonical form.  Every pathname that\
+                \ denotes a nonexistent file\nor directory also has a unique canonical\
+                \ form.  The canonical form of\nthe pathname of a nonexistent file\
+                \ or directory may be different from\nthe canonical form of the same\
+                \ pathname after the file or directory is\ncreated.  Similarly, the\
+                \ canonical form of the pathname of an existing\nfile or directory\
+                \ may be different from the canonical form of the same\npathname after\
+                \ the file or directory is deleted."
+            canonicalFile:
+              type: "object"
+              properties: {}
+              description: "Returns the canonical form of this abstract pathname.\
+                \  Equivalent to\n<code>new&nbsp;File(this.{@link #getCanonicalPath})</code>."
+            directory:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a\ndirectory.\n\n<p> Where it is required to distinguish an I/O\
+                \ exception from the case\nthat the file is not a directory, or where\
+                \ several attributes of the\nsame file are required at the same time,\
+                \ then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            file:
+              type: "boolean"
+              description: "Tests whether the file denoted by this abstract pathname\
+                \ is a normal\nfile.  A file is <em>normal</em> if it is not a directory\
+                \ and, in\naddition, satisfies other system-dependent criteria.  Any\
+                \ non-directory\nfile created by a Java application is guaranteed\
+                \ to be a normal file.\n\n<p> Where it is required to distinguish\
+                \ an I/O exception from the case\nthat the file is not a normal file,\
+                \ or where several attributes of the\nsame file are required at the\
+                \ same time, then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+                \    * Files.readAttributes} method may be used."
+            hidden:
+              type: "boolean"
+              description: "Tests whether the file named by this abstract pathname\
+                \ is a hidden\nfile.  The exact definition of <em>hidden</em> is system-dependent.\
+                \  On\nUNIX systems, a file is considered to be hidden if its name\
+                \ begins with\na period character (<code>'.'</code>).  On Microsoft\
+                \ Windows systems, a file is\nconsidered to be hidden if it has been\
+                \ marked as such in the filesystem."
+            lastModified:
+              type: "integer"
+              description: "Sets the last-modified time of the file or directory named\
+                \ by this\nabstract pathname.\n\n<p> All platforms support file-modification\
+                \ times to the nearest second,\nbut some provide more precision. \
+                \ The argument will be truncated to fit\nthe supported precision.\
+                \  If the operation succeeds and no intervening\noperations on the\
+                \ file take place, then the next invocation of the\n<code>{@link #lastModified}</code>\
+                \ method will return the (possibly\ntruncated) <code>time</code> argument\
+                \ that was passed to this method."
+            writable:
+              type: "boolean"
+              description: "A convenience method to set the owner's write permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to modify files that\ndisallow write operations.\n\n<p>\
+                \ An invocation of this method of the form <tt>file.setWritable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setWritable(arg,\
+                \ true) </pre>"
+            readable:
+              type: "boolean"
+              description: "A convenience method to set the owner's read permission\
+                \ for this abstract\npathname. On some platforms it may be possible\
+                \ to start the Java virtual\nmachine with special privileges that\
+                \ allow it to read files that that are\nmarked as unreadable.\n\n\
+                <p>An invocation of this method of the form <tt>file.setReadable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setReadable(arg,\
+                \ true) </pre>"
+            executable:
+              type: "boolean"
+              description: "A convenience method to set the owner's execute permission\
+                \ for this\nabstract pathname. On some platforms it may be possible\
+                \ to start the Java\nvirtual machine with special privileges that\
+                \ allow it to execute files\nthat are not marked executable.\n\n<p>An\
+                \ invocation of this method of the form <tt>file.setExcutable(arg)</tt>\n\
+                behaves in exactly the same way as the invocation\n\n<pre>\n    file.setExecutable(arg,\
+                \ true) </pre>"
+            totalSpace:
+              type: "integer"
+              description: "Returns the size of the partition <a href=\"#partName\"\
+                >named</a> by this\nabstract pathname."
+              format: "int64"
+            freeSpace:
+              type: "integer"
+              description: "Returns the number of unallocated bytes in the partition\
+                \ <a\nhref=\"#partName\">named</a> by this abstract path name.\n\n\
+                <p> The returned number of unallocated bytes is a hint, but not\n\
+                a guarantee, that it is possible to use most or any of these\nbytes.\
+                \  The number of unallocated bytes is most likely to be\naccurate\
+                \ immediately after this call.  It is likely to be made\ninaccurate\
+                \ by any external I/O operations including those made\non the system\
+                \ outside of this virtual machine.  This method\nmakes no guarantee\
+                \ that write operations to this file system\nwill succeed."
+              format: "int64"
+            usableSpace:
+              type: "integer"
+              description: "Returns the number of bytes available to this virtual\
+                \ machine on the\npartition <a href=\"#partName\">named</a> by this\
+                \ abstract pathname.  When\npossible, this method checks for write\
+                \ permissions and other operating\nsystem restrictions and will therefore\
+                \ usually provide a more accurate\nestimate of how much new data can\
+                \ actually be written than{@link\n    * #getFreeSpace}.\n\n<p> The\
+                \ returned number of available bytes is a hint, but not a\nguarantee,\
+                \ that it is possible to use most or any of these bytes.  The\nnumber\
+                \ of unallocated bytes is most likely to be accurate immediately\n\
+                after this call.  It is likely to be made inaccurate by any external\n\
+                I/O operations including those made on the system outside of this\n\
+                virtual machine.  This method makes no guarantee that write operations\n\
+                to this file system will succeed."
+              format: "int64"
+          description: "Returns the canonical form of this abstract pathname.  Equivalent\
+            \ to\n<code>new&nbsp;File(this.{@link #getCanonicalPath})</code>."
+        directory:
+          type: "boolean"
+          description: "Tests whether the file denoted by this abstract pathname is\
+            \ a\ndirectory.\n\n<p> Where it is required to distinguish an I/O exception\
+            \ from the case\nthat the file is not a directory, or where several attributes\
+            \ of the\nsame file are required at the same time, then the{@link\n  \
+            \  * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n   \
+            \ * Files.readAttributes} method may be used."
+        file:
+          type: "boolean"
+          description: "Tests whether the file denoted by this abstract pathname is\
+            \ a normal\nfile.  A file is <em>normal</em> if it is not a directory\
+            \ and, in\naddition, satisfies other system-dependent criteria.  Any non-directory\n\
+            file created by a Java application is guaranteed to be a normal file.\n\
+            \n<p> Where it is required to distinguish an I/O exception from the case\n\
+            that the file is not a normal file, or where several attributes of the\n\
+            same file are required at the same time, then the{@link\n    * java.nio.file.Files#readAttributes(Path,Class,LinkOption[])\n\
+            \    * Files.readAttributes} method may be used."
+        hidden:
+          type: "boolean"
+          description: "Tests whether the file named by this abstract pathname is\
+            \ a hidden\nfile.  The exact definition of <em>hidden</em> is system-dependent.\
+            \  On\nUNIX systems, a file is considered to be hidden if its name begins\
+            \ with\na period character (<code>'.'</code>).  On Microsoft Windows systems,\
+            \ a file is\nconsidered to be hidden if it has been marked as such in\
+            \ the filesystem."
+        lastModified:
+          type: "integer"
+          description: "Sets the last-modified time of the file or directory named\
+            \ by this\nabstract pathname.\n\n<p> All platforms support file-modification\
+            \ times to the nearest second,\nbut some provide more precision.  The\
+            \ argument will be truncated to fit\nthe supported precision.  If the\
+            \ operation succeeds and no intervening\noperations on the file take place,\
+            \ then the next invocation of the\n<code>{@link #lastModified}</code>\
+            \ method will return the (possibly\ntruncated) <code>time</code> argument\
+            \ that was passed to this method."
+        writable:
+          type: "boolean"
+          description: "A convenience method to set the owner's write permission for\
+            \ this abstract\npathname. On some platforms it may be possible to start\
+            \ the Java virtual\nmachine with special privileges that allow it to modify\
+            \ files that\ndisallow write operations.\n\n<p> An invocation of this\
+            \ method of the form <tt>file.setWritable(arg)</tt>\nbehaves in exactly\
+            \ the same way as the invocation\n\n<pre>\n    file.setWritable(arg, true)\
+            \ </pre>"
+        readable:
+          type: "boolean"
+          description: "A convenience method to set the owner's read permission for\
+            \ this abstract\npathname. On some platforms it may be possible to start\
+            \ the Java virtual\nmachine with special privileges that allow it to read\
+            \ files that that are\nmarked as unreadable.\n\n<p>An invocation of this\
+            \ method of the form <tt>file.setReadable(arg)</tt>\nbehaves in exactly\
+            \ the same way as the invocation\n\n<pre>\n    file.setReadable(arg, true)\
+            \ </pre>"
+        executable:
+          type: "boolean"
+          description: "A convenience method to set the owner's execute permission\
+            \ for this\nabstract pathname. On some platforms it may be possible to\
+            \ start the Java\nvirtual machine with special privileges that allow it\
+            \ to execute files\nthat are not marked executable.\n\n<p>An invocation\
+            \ of this method of the form <tt>file.setExcutable(arg)</tt>\nbehaves\
+            \ in exactly the same way as the invocation\n\n<pre>\n    file.setExecutable(arg,\
+            \ true) </pre>"
+        totalSpace:
+          type: "integer"
+          description: "Returns the size of the partition <a href=\"#partName\">named</a>\
+            \ by this\nabstract pathname."
+          format: "int64"
+        freeSpace:
+          type: "integer"
+          description: "Returns the number of unallocated bytes in the partition <a\n\
+            href=\"#partName\">named</a> by this abstract path name.\n\n<p> The returned\
+            \ number of unallocated bytes is a hint, but not\na guarantee, that it\
+            \ is possible to use most or any of these\nbytes.  The number of unallocated\
+            \ bytes is most likely to be\naccurate immediately after this call.  It\
+            \ is likely to be made\ninaccurate by any external I/O operations including\
+            \ those made\non the system outside of this virtual machine.  This method\n\
+            makes no guarantee that write operations to this file system\nwill succeed."
+          format: "int64"
+        usableSpace:
+          type: "integer"
+          description: "Returns the number of bytes available to this virtual machine\
+            \ on the\npartition <a href=\"#partName\">named</a> by this abstract pathname.\
+            \  When\npossible, this method checks for write permissions and other\
+            \ operating\nsystem restrictions and will therefore usually provide a\
+            \ more accurate\nestimate of how much new data can actually be written\
+            \ than{@link\n    * #getFreeSpace}.\n\n<p> The returned number of available\
+            \ bytes is a hint, but not a\nguarantee, that it is possible to use most\
+            \ or any of these bytes.  The\nnumber of unallocated bytes is most likely\
+            \ to be accurate immediately\nafter this call.  It is likely to be made\
+            \ inaccurate by any external\nI/O operations including those made on the\
+            \ system outside of this\nvirtual machine.  This method makes no guarantee\
+            \ that write operations\nto this file system will succeed."
+          format: "int64"
+      description: "java.io.File"
+    java.net.URI:
+      type: "object"
+      properties:
+        string:
+          type: "string"
+          description: "The string form of this URI."
+        absolute:
+          type: "boolean"
+          description: "Tells whether or not this URI is absolute.\n\n<p> A URI is\
+            \ absolute if, and only if, it has a scheme component. </p>"
+        opaque:
+          type: "boolean"
+          description: "Tells whether or not this URI is opaque.\n\n<p> A URI is opaque\
+            \ if, and only if, it is absolute and its\nscheme-specific part does not\
+            \ begin with a slash character ('/').\nAn opaque URI has a scheme, a scheme-specific\
+            \ part, and possibly\na fragment; all other components are undefined.\
+            \ </p>"
+        rawSchemeSpecificPart:
+          type: "string"
+          description: "Returns the raw scheme-specific part of this URI.  The scheme-specific\n\
+            part is never undefined, though it may be empty.\n\n<p> The scheme-specific\
+            \ part of a URI only contains legal URI\ncharacters. </p>"
+        rawAuthority:
+          type: "string"
+          description: "Returns the raw authority component of this URI.\n\n<p> The\
+            \ authority component of a URI, if defined, only contains the\ncommercial-at\
+            \ character ({@code '@'}) and characters in the\n<i>unreserved</i>, <i>punct</i>,\
+            \ <i>escaped</i>, and <i>other</i>\ncategories.  If the authority is server-based\
+            \ then it is further\nconstrained to have valid user-information, host,\
+            \ and port\ncomponents. </p>"
+        rawUserInfo:
+          type: "string"
+          description: "Returns the raw user-information component of this URI.\n\n\
+            <p> The user-information component of a URI, if defined, only contains\n\
+            characters in the <i>unreserved</i>, <i>punct</i>, <i>escaped</i>, and\n\
+            <i>other</i> categories. </p>"
+        rawPath:
+          type: "string"
+          description: "Returns the raw path component of this URI.\n\n<p> The path\
+            \ component of a URI, if defined, only contains the slash\ncharacter ({@code\
+            \ '/'}), the commercial-at character ({@code '@'}),\nand characters in\
+            \ the <i>unreserved</i>, <i>punct</i>, <i>escaped</i>,\nand <i>other</i>\
+            \ categories. </p>"
+        rawQuery:
+          type: "string"
+          description: "Returns the raw query component of this URI.\n\n<p> The query\
+            \ component of a URI, if defined, only contains legal URI\ncharacters.\
+            \ </p>"
+        rawFragment:
+          type: "string"
+          description: "Returns the raw fragment component of this URI.\n\n<p> The\
+            \ fragment component of a URI, if defined, only contains legal URI\ncharacters.\
+            \ </p>"
+      description: "java.net.URI"
+

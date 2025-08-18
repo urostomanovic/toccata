@@ -13,22 +13,39 @@ const navItems = [
   { label: "Help", href: "/help" },
 ];
 
+const apiTestItem = { label: "API Test", href: "/api-test" };
+
 export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-gray-900 text-white px-6 py-2 flex gap-6">
-      {navItems.map((item) => (
+    <nav className="bg-gray-900 text-white px-6 py-2 flex justify-between items-center">
+      {/* Glavni meni - leva strana */}
+      <div className="flex gap-6">
+        {navItems.map((item) => (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`hover:underline ${
+              pathname === item.href ? "font-bold underline" : ""
+            }`}
+          >
+            {item.label}
+          </Link>
+        ))}
+      </div>
+      
+      {/* API Test - desna strana */}
+      <div className="flex gap-6">
         <Link
-          key={item.href}
-          href={item.href}
+          href={apiTestItem.href}
           className={`hover:underline ${
-            pathname === item.href ? "font-bold underline" : ""
+            pathname === apiTestItem.href ? "font-bold underline" : ""
           }`}
         >
-          {item.label}
+          {apiTestItem.label}
         </Link>
-      ))}
+      </div>
     </nav>
   );
 }
