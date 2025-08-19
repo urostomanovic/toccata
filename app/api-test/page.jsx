@@ -208,6 +208,188 @@ export default function ApiTestPage() {
     }
   };
 
+  // Test pojedinačne sobe - efikasniji pristup
+  const testSingleRoom = async () => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      console.log('Testiranje pojedinačne sobe...');
+      
+      const response = await fetch('/api/room-efficient/101', {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResults({ 
+          message: "Efikasni pristup uspešan! 🎉", 
+          data: data.room,
+          apiCalls: data.apiCalls,
+          responseTime: data.responseTime
+        });
+      } else {
+        setError(`Efikasni pristup greška: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Efikasni pristup Error:', err);
+      setError(`Efikasni pristup neuspešan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Test dostupnih parametara za sobu
+  const testAvailableParameters = async () => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      console.log('Testiranje dostupnih parametara...');
+      
+      const response = await fetch('/api/test-parameters/101', {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResults({ 
+          message: "Test parametara uspešan! 🎉", 
+          availableParameters: data.availableParameters,
+          testResults: data.testResults
+        });
+      } else {
+        setError(`Test parametara greška: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Test parametara Error:', err);
+      setError(`Test parametara neuspešan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Test svih dostupnih parametara u sistemu
+  const testAllSystemParameters = async () => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      console.log('Testiranje svih parametara u sistemu...');
+      
+      const response = await fetch('/api/system-parameters', {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResults({ 
+          message: "Svi parametri u sistemu! 🎉", 
+          allParameters: data.parameters,
+          parameterCount: data.parameters.length
+        });
+      } else {
+        setError(`Test sistemskih parametara greška: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Test sistemskih parametara Error:', err);
+      setError(`Test sistemskih parametara neuspešan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Test svih vrednosti parametara
+  const testAllParameterValues = async () => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      console.log('Testiranje svih vrednosti parametara...');
+      
+      const response = await fetch('/api/parameter-values', {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResults({ 
+          message: "Sve vrednosti parametara! 🎉", 
+          allValues: data.values,
+          valueCount: data.values.length
+        });
+      } else {
+        setError(`Test vrednosti parametara greška: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Test vrednosti parametara Error:', err);
+      setError(`Test vrednosti parametara neuspešan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Test WebSocket konekcije sa TOCCATA serverom
+  const testWebSocketConnection = async () => {
+    setLoading(true);
+    setError(null);
+    setResults(null);
+
+    try {
+      console.log('Testiranje WebSocket konekcije sa TOCCATA serverom...');
+      
+      const response = await fetch('/api/test-websocket', {
+        method: 'GET'
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        setResults({ 
+          message: "WebSocket test uspešan! 🎉", 
+          connectionStatus: data.connectionStatus,
+          serverInfo: data.serverInfo,
+          testResults: data.testResults
+        });
+      } else {
+        setError(`WebSocket test greška: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('WebSocket test Error:', err);
+      setError(`WebSocket test neuspešan: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Test Next.js API route
   const testNextApi = async () => {
     setLoading(true);
@@ -426,13 +608,53 @@ export default function ApiTestPage() {
                  {loading ? 'Učitavanje...' : 'Proxy Test'}
                </button>
 
-               <button
-                 onClick={testNextApi}
-                 disabled={loading}
-                 className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
-               >
-                 {loading ? 'Učitavanje...' : 'Next.js Test'}
-               </button>
+                               <button
+                  onClick={testSingleRoom}
+                  disabled={loading}
+                  className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'Efikasni Test'}
+                </button>
+
+                <button
+                  onClick={testAvailableParameters}
+                  disabled={loading}
+                  className="px-4 py-2 bg-cyan-600 text-white rounded-md hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-cyan-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'Test Parametara'}
+                </button>
+
+                <button
+                  onClick={testAllSystemParameters}
+                  disabled={loading}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'Sistemski Parametri'}
+                </button>
+
+                <button
+                  onClick={testAllParameterValues}
+                  disabled={loading}
+                  className="px-4 py-2 bg-brown-600 text-white rounded-md hover:bg-brown-700 focus:outline-none focus:ring-2 focus:ring-brown-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'Vrednosti Parametara'}
+                </button>
+
+                <button
+                  onClick={testWebSocketConnection}
+                  disabled={loading}
+                  className="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'WebSocket Test'}
+                </button>
+
+                <button
+                  onClick={testNextApi}
+                  disabled={loading}
+                  className="px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700 focus:outline-none focus:ring-2 focus:ring-pink-500 disabled:opacity-50"
+                >
+                  {loading ? 'Učitavanje...' : 'Next.js Test'}
+                </button>
             </div>
           </div>
 
