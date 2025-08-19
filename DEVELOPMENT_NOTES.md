@@ -5,14 +5,9 @@
 - **Lokacija**: Srbija (radi na poslu i kod kuće)
 - **Iskustvo**: 40 godina u industriji (od 1985)
 - **Pozadina**: 
-  - Počeo sa asemblerom i INTEL razvojnim sistemom II (CP/M)
   - C programiranje i real-time sistemi
   - Osnivač i tehnički direktor ICCE (1988-1998) - SCADA i PLC sistemi
   - Osnivač EUROICC (1998) - direktor do danas
-- **Trenutne kompanije**:
-  - RingBus Americas (US tržište) - fire/smoke damper control
-  - ConInspect (EUROICC Software Services) - facade inspection tool
-  - ESTechnology - smart termostati za bojlere
   - EUROICC Automation - TOCCATA GRMS sistem
 - **Cilj**: Učenje Next.js za praćenje modularizacije TOCCATA servera (Java monolit → web tehnologije)
 - **Nivo**: Početnik u Next.js-u, uči kroz Next.js kurs
@@ -41,6 +36,22 @@
 - **Kratki odgovori**: Fokus na implementaciju, manje objašnjenja
 - **Jedan po jedan**: Ne više fajlova odjednom
 - **Prednosti**: Manje kašnjenja, lakše praćenje, bolje testiranje, lakše debugovanje
+
+### 🤝 **Dogovor o kodiranju (19.08.2025)**
+- **Pre kodiranja**: 
+  1. Analiza problema/zahteva
+  2. Predlog pristupa/strategije  
+  3. Čekanje saglasnosti
+  4. Tek onda implementacija
+- **Kada kodirati**: 
+  - Samo na eksplicitnu molbu
+  - Nakon dogovora oko pristupa
+  - Kada je jasno šta treba uraditi
+- **Kada diskutovati**: 
+  - Analiza problema
+  - Predlozi rešenja
+  - Teorijske koncepcije
+  - Arhitektonske odluke
 
 ## Trenutno stanje projekta
 - **Next.js App Router** sa TypeScript

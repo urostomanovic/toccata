@@ -1,0 +1,142 @@
+{
+  "hotel": {
+    "name": "TOCCATA Hotel",
+    "description": "Guest Room Management System",
+    "version": "1.0.0",
+    "floors": [
+      {
+        "floorNumber": 1,
+        "floorName": "1.Floor",
+        "description": "Prvi sprat",
+        "rooms": [
+          { "id": "101", "type": "single", "bacnetInstance": 1234, "bacnetNetwork": 1044 },
+          { "id": "102", "type": "single", "bacnetInstance": 1235, "bacnetNetwork": 1044 },
+          { "id": "103", "type": "double", "bacnetInstance": 1236, "bacnetNetwork": 1044 },
+          { "id": "104", "type": "double", "bacnetInstance": 1237, "bacnetNetwork": 1044 },
+          { "id": "105", "type": "suite", "bacnetInstance": 1238, "bacnetNetwork": 1044 }
+        ]
+      },
+      {
+        "floorNumber": 2,
+        "floorName": "2.Floor", 
+        "description": "Drugi sprat",
+        "rooms": [
+          { "id": "201", "type": "single", "bacnetInstance": 2234, "bacnetNetwork": 1044 },
+          { "id": "202", "type": "single", "bacnetInstance": 2235, "bacnetNetwork": 1044 },
+          { "id": "203", "type": "double", "bacnetInstance": 2236, "bacnetNetwork": 1044 },
+          { "id": "204", "type": "double", "bacnetInstance": 2237, "bacnetNetwork": 1044 },
+          { "id": "205", "type": "suite", "bacnetInstance": 2238, "bacnetNetwork": 1044 }
+        ]
+      }
+    ],
+    "roomTypes": {
+      "single": {
+        "name": "Single Room",
+        "nameSr": "Jednokrevetna soba",
+        "capacity": 1,
+        "icon": "🛏️",
+        "color": "blue",
+        "defaultSetPoint": 23.0
+      },
+      "double": {
+        "name": "Double Room", 
+        "nameSr": "Dvokrevetna soba",
+        "capacity": 2,
+        "icon": "🛏️🛏️",
+        "color": "green",
+        "defaultSetPoint": 22.0
+      },
+      "suite": {
+        "name": "Suite",
+        "nameSr": "Apartman",
+        "capacity": 4,
+        "icon": "🏰",
+        "color": "purple",
+        "defaultSetPoint": 21.0
+      }
+    },
+    "parameters": {
+      "temperature": {
+        "name": "Room Temperature",
+        "nameSr": "Temperatura",
+        "icon": "🌡️",
+        "unit": "°C",
+        "transform": "divideBy10"
+      },
+      "setPoint": {
+        "name": "Room Set Point", 
+        "nameSr": "Postavljena temp.",
+        "icon": "🎯",
+        "unit": "°C",
+        "transform": "divideBy10"
+      },
+      "door": {
+        "name": "Door",
+        "nameSr": "Vrata",
+        "icon": "🚪",
+        "values": {
+          "1": "OPEN",
+          "0": "CLOSED"
+        }
+      },
+      "window": {
+        "name": "Window2",
+        "nameSr": "Prozor", 
+        "icon": "🪟",
+        "values": {
+          "1": "OPEN",
+          "0": "CLOSED"
+        }
+      },
+      "presence": {
+        "name": "Presence",
+        "nameSr": "Prisustvo",
+        "icon": "👤",
+        "values": {
+          "1": "PRESENT",
+          "0": "ABSENT"
+        }
+      },
+      "dnd": {
+        "name": "DND",
+        "nameSr": "Ne uznemiravaj",
+        "icon": "🚫",
+        "values": {
+          "1": "ON",
+          "0": "OFF"
+        }
+      },
+      "mur": {
+        "name": "MUR",
+        "nameSr": "Čišćenje",
+        "icon": "🧹",
+        "values": {
+          "1": "REQUESTED",
+          "0": "OK"
+        }
+      },
+      "fan": {
+        "name": "Fan1",
+        "nameSr": "Ventilator",
+        "icon": "💨",
+        "values": {
+          "1": "ON",
+          "0": "OFF"
+        }
+      }
+    },
+    "api": {
+      "baseUrl": "https://77.105.34.206:9000/toccata",
+      "endpoints": {
+        "rooms": "/api/v1/room/getAll",
+        "parameters": "/api/v1/parameter/getAll",
+        "parameterValue": "/api/v1/parameter/getValue",
+        "parameterValues": "/api/v1/parameter/getAllValues"
+      },
+      "credentials": {
+        "username": "admin",
+        "password": "toccataadmin"
+      }
+    }
+  }
+}

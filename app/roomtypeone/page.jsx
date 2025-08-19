@@ -3,7 +3,20 @@
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import RoomsSubnav from "@/components/RoomsSubnav";
+import Subnav from "@/components/RoomsSubnav";
+
+const roomsItems = [
+  { label: "All rooms", href: "/rooms" },
+  { label: "A region", href: "/rooms/a-region" },
+  { label: "B region", href: "/rooms/b-region" },
+  { label: "C region", href: "/rooms/c-region" },
+  { label: "Occupied", href: "/rooms/occupied" },
+  { label: "Vacant", href: "/rooms/vacant" },
+  { label: "To be cleaned", href: "/rooms/to-be-cleaned" },
+  { label: "Alarms", href: "/rooms/alarms" },
+  { label: "Out of order", href: "/rooms/out-of-order" },
+  { label: "Settings", href: "/rooms/settings" },
+];
 
 export default function RoomTypeOnePage() {
   const searchParams = useSearchParams();
@@ -100,8 +113,8 @@ export default function RoomTypeOnePage() {
   return (
     <>
       <Navbar />
-      <RoomsSubnav />
-      <main className="p-6">
+      <Subnav items={roomsItems} />
+      <main className="pt-24 pb-6 px-6">
         <div className="p-4">
           {/* Gornji levi ugao - broj sobe i Go dugme */}
           <div className="flex justify-start mb-6">

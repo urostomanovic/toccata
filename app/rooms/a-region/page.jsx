@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Subnav from "@/components/RoomsSubnav";
+import RoomsFilter from "@/components/RoomsFilter";
+import RoomCardMini from "@/components/RoomCardMini";
 
 const roomsItems = [
   { label: "All rooms", href: "/rooms" },
@@ -17,13 +19,14 @@ const roomsItems = [
   { label: "Out of order", href: "/rooms/out-of-order" },
   { label: "Settings", href: "/rooms/settings" },
 ];
-import RoomCardMini from "@/components/RoomCardMini";
 
-export default function RoomsPage() {
+export default function ARegionPage() {
   const router = useRouter();
   const [hotel, setHotel] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState(null);
 
   // Fetch real rooms data from TOCCATA API
   useEffect(() => {
@@ -83,13 +86,35 @@ export default function RoomsPage() {
     router.push(`/roomtypeone?id=${roomId}`);
   };
 
+  const handleApplyFilter = (filterData) => {
+    console.log('Applied filter on A region:', filterData);
+    setCurrentFilter(filterData);
+    // Ovde ćemo implementirati filtriranje soba za A region
+  };
+
   return (
     <>
       <Navbar />
       <Subnav items={roomsItems} />
       <main className="pt-24 pb-6 px-6">
         <div className="p-4">
-          <h1 className="text-2xl font-bold text-gray-800 mb-6">All Rooms</h1>
+          {/* Filter Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">A Region</h1>
+            <div className="flex items-center gap-4">
+              {currentFilter && (
+                <div className="text-sm text-gray-600">
+                  Active filter: <span className="font-medium">{currentFilter.name}</span>
+                </div>
+              )}
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Filter
+              </button>
+            </div>
+          </div>
 
           {loading && (
             <div className="text-center py-8">
@@ -129,8 +154,14 @@ export default function RoomsPage() {
           )}
         </div>
       </main>
+
+      {/* RoomsFilter Modal */}
+      <RoomsFilter
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApplyFilter={handleApplyFilter}
+        currentFilter={currentFilter}
+      />
     </>
   );
 }
-
-

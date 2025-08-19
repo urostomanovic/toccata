@@ -19,14 +19,14 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <nav className="bg-gray-900 text-white px-6 py-2 flex justify-between items-center">
+    <nav className="fixed top-0 left-0 right-0 bg-gray-900 text-white px-6 py-2 flex justify-between items-center z-50 shadow-lg navbar-fixed">
       {/* Glavni meni - leva strana */}
-      <div className="flex gap-6">
+      <div className="flex gap-6 flex-shrink-0 overflow-hidden">
         {navItems.map((item) => (
           <Link
             key={item.href}
             href={item.href}
-            className={`hover:underline ${
+            className={`hover:underline whitespace-nowrap ${
               pathname === item.href ? "font-bold underline" : ""
             }`}
           >
@@ -36,10 +36,10 @@ export default function Navbar() {
       </div>
       
       {/* API Test - desna strana */}
-      <div className="flex gap-6">
+      <div className="flex gap-6 flex-shrink-0">
         <Link
           href={apiTestItem.href}
-          className={`hover:underline ${
+          className={`hover:underline whitespace-nowrap ${
             pathname === apiTestItem.href ? "font-bold underline" : ""
           }`}
         >

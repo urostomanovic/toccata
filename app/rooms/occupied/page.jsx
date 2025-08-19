@@ -1,12 +1,30 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import RoomCardMini from "@/components/RoomCardMini";
-import RoomsSubnav from "@/components/RoomsSubnav";
+import Subnav from "@/components/RoomsSubnav";
+import RoomsFilter from "@/components/RoomsFilter";
+
+const roomsItems = [
+  { label: "All rooms", href: "/rooms" },
+  { label: "A region", href: "/rooms/a-region" },
+  { label: "B region", href: "/rooms/b-region" },
+  { label: "C region", href: "/rooms/c-region" },
+  { label: "Occupied", href: "/rooms/occupied" },
+  { label: "Vacant", href: "/rooms/vacant" },
+  { label: "To be cleaned", href: "/rooms/to-be-cleaned" },
+  { label: "Alarms", href: "/rooms/alarms" },
+  { label: "Out of order", href: "/rooms/out-of-order" },
+  { label: "Settings", href: "/rooms/settings" },
+];
 
 export default function OccupiedRoomsPage() {
   const router = useRouter();
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [currentFilter, setCurrentFilter] = useState(null);
+  
   const floors = 10;
   const roomsPerFloor = 20;
 
@@ -43,13 +61,35 @@ export default function OccupiedRoomsPage() {
     router.push(`/roomtypeone?id=${roomId}`);
   };
 
+  const handleApplyFilter = (filterData) => {
+    console.log('Applied filter on occupied page:', filterData);
+    setCurrentFilter(filterData);
+    // Ovde ćemo implementirati filtriranje soba
+  };
+
   return (
     <>
       <Navbar />
-      <RoomsSubnav />
-      <main className="p-6">
+      <Subnav items={roomsItems} />
+      <main className="pt-24 pb-6 px-6">
         <div className="p-4">
-          <h1 className="text-xl font-bold mb-4">Occupied Rooms</h1>
+          {/* Filter Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-xl font-bold">Occupied Rooms</h1>
+            <div className="flex items-center gap-4">
+              {currentFilter && (
+                <div className="text-sm text-gray-600">
+                  Active filter: <span className="font-medium">{currentFilter.name}</span>
+                </div>
+              )}
+              <button
+                onClick={() => setIsFilterOpen(true)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Filter
+              </button>
+            </div>
+          </div>
 
           {/* Prikaz po spratovima */}
           {Object.keys(occupiedRoomsByFloor)
@@ -78,6 +118,14 @@ export default function OccupiedRoomsPage() {
             ))}
         </div>
       </main>
+      
+      {/* RoomsFilter Modal */}
+      <RoomsFilter
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApplyFilter={handleApplyFilter}
+        currentFilter={currentFilter}
+      />
     </>
   );
 }

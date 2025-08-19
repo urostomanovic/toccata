@@ -484,7 +484,7 @@ export default function ApiTestPage() {
   return (
     <>
       <Navbar />
-      <main className="p-6">
+      <main className="pt-12 pb-6 px-6">
         <div className="p-4">
           <h1 className="text-2xl font-bold mb-6">TOCCATA API Test</h1>
           
