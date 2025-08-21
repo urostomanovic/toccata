@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 
 export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFilter = null }) {
   // State za filter podatke - 3 stanja: 'none', 'include', 'exclude'
@@ -92,6 +93,50 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
     }
   }, []);
 
+  // Učitavanje currentFilter kada se modal otvori
+  useEffect(() => {
+    if (isOpen && currentFilter) {
+      setFilterName(currentFilter.name);
+      // Proveri da li je currentFilter u formatu sa filters objektom ili direktno
+      if (currentFilter.filters) {
+        // Format sa filters objektom (iz savedFilters)
+        setRooms(currentFilter.filters.rooms || { floors: "", rooms: "" });
+        setStatus(currentFilter.filters.status || {
+          occupied: 'none',
+          vacant: 'none',
+          alarm: 'none',
+          'to-be-cleaned': 'none',
+          'out-of-order': 'none'
+        });
+        setAttributes(currentFilter.filters.attributes || {
+          online: 'none',
+          clean: 'none',
+          'a-region': 'none',
+          'b-region': 'none',
+          'c-region': 'none'
+        });
+      } else {
+        // Direktan format (iz handleApplyFilter)
+        setRooms(currentFilter.rooms || { floors: "", rooms: "" });
+        setStatus(currentFilter.status || {
+          occupied: 'none',
+          vacant: 'none',
+          alarm: 'none',
+          'to-be-cleaned': 'none',
+          'out-of-order': 'none'
+        });
+        setAttributes(currentFilter.attributes || {
+          online: 'none',
+          clean: 'none',
+          'a-region': 'none',
+          'b-region': 'none',
+          'c-region': 'none'
+        });
+      }
+      setLogic(currentFilter.logic || "AND");
+    }
+  }, [isOpen, currentFilter]);
+
   // Čuvanje filtera u localStorage
   const saveToLocalStorage = (filters) => {
     localStorage.setItem("toccata-saved-filters", JSON.stringify(filters));
@@ -160,6 +205,7 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
 
   // Otvaranje Save As modala
   const handleSaveAsClick = () => {
+    console.log('Save As clicked');
     setIsSaveAsModalVisible(true);
     setSaveAsName("");
   };
@@ -265,6 +311,7 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
 
   // Čuvanje filtera
   const handleSaveFilter = () => {
+    console.log('Save filter clicked:', filterName);
     // Prikaži Save modal
     setIsSaveModalVisible(true);
     
@@ -281,6 +328,7 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
         filters: { rooms, status, attributes },
         logic
       };
+      console.log('Updated existing filter:', filterName);
     } else {
       // Kreiraj novi filter
       const newFilter = {
@@ -291,6 +339,7 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
         deletable: true
       };
       updatedFilters = [...savedFilters, newFilter];
+      console.log('Created new filter:', filterName);
     }
     
     setSavedFilters(updatedFilters);
@@ -304,10 +353,12 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
 
   // Brisanje filtera
   const handleDeleteFilter = () => {
+    console.log('Delete filter clicked:', filterName);
     // Pronađi trenutno selektovan filter
     const currentFilter = savedFilters.find(f => f.name === filterName);
     
     if (!currentFilter) {
+      console.log('Filter not found:', filterName);
       return;
     }
     
@@ -315,10 +366,12 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
       // Prikaži informaciju da se ne može obrisati
       setDeleteFilterInfo({ id: currentFilter.id, name: currentFilter.name, notDeletable: true });
       setIsDeleteModalVisible(true);
+      console.log('Cannot delete filter (not deletable):', filterName);
     } else {
       // Traži potvrdu za brisanje
       setDeleteFilterInfo({ id: currentFilter.id, name: currentFilter.name, notDeletable: false });
       setIsDeleteModalVisible(true);
+      console.log('Delete confirmation requested for:', filterName);
     }
   };
 
@@ -393,46 +446,14 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
     }));
   };
 
-  // Funkcija za render checkbox-a sa 3 stanja
-  const renderThreeStateCheckbox = (item, currentState, onToggle, label) => {
-    let checkboxClasses = "w-5 h-5 rounded border-2 transition-all duration-200 focus:outline-none focus:ring-0 appearance-none bg-white";
-    let icon = null;
-    
-    if (currentState === 'include') {
-      checkboxClasses += " border-green-500";
-      icon = "✓";
-    } else if (currentState === 'exclude') {
-      checkboxClasses += " border-red-500";
-      icon = "✗";
-    } else {
-      checkboxClasses += " border-gray-300";
+  // Funkcija za render checkbox-a sa 3 stanja (novi stil)
+  const getCheckboxDisplay = (state) => {
+    switch (state) {
+      case 'include': return "✅"; // ON
+      case 'exclude': return "❌"; // OFF
+      case 'none': return "⚪"; // None
+      default: return "⚪";
     }
-
-    return (
-      <label className="flex items-center space-x-2 cursor-pointer">
-        <div className="relative">
-          <input
-            type="checkbox"
-            checked={currentState !== 'none'}
-            onChange={() => onToggle(item)}
-            className={checkboxClasses}
-            style={{
-              WebkitAppearance: 'none',
-              MozAppearance: 'none',
-              appearance: 'none'
-            }}
-          />
-          {icon && (
-            <span className="absolute inset-0 flex items-center justify-center text-xs font-bold pointer-events-none">
-              {icon}
-            </span>
-          )}
-        </div>
-        <span className="text-sm text-gray-700 capitalize">
-          {label.replace(/-/g, ' ')}
-        </span>
-      </label>
-    );
   };
 
   // Parsiranje teksta u brojeve
@@ -463,18 +484,19 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
 
   if (!isOpen) return null;
 
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content max-w-md mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-        {/* Header - Selected Filter */}
-        <div className="p-6 border-b">
-          <div className="text-lg font-semibold text-gray-800">
-            Selected Filter: {filterName}
-          </div>
-        </div>
+     return (
+     <div className="rooms-filter-modal" onClick={onClose}>
+       <div className="rooms-filter-content" onClick={(e) => e.stopPropagation()}>
+                 {/* Header - Selected Filter */}
+         <div className="flex justify-between items-center mb-6">
+           <h2 className="text-xl font-semibold">Selected Filter: {filterName}</h2>
+           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+             <XMarkIcon className="h-6 w-6" />
+           </button>
+         </div>
 
-        {/* Navbar sa opcijama */}
-        <div className="bg-gray-900 text-white px-4 py-2 flex justify-between items-center">
+                 {/* Navbar sa opcijama */}
+         <div className="bg-gray-900 text-white px-4 py-2 flex justify-between items-center" onClick={(e) => e.stopPropagation()}>
           <div className="flex gap-2">
             {/* Open Dropdown */}
             <div className="relative">
@@ -501,35 +523,47 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
               )}
             </div>
             
-            <button
-              onClick={handleSaveFilter}
-              className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
-            >
-              Save
-            </button>
-            <button
-              onClick={handleSaveAsClick}
-              className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
-            >
-              Save As...
-            </button>
-            <button
-              onClick={handleDeleteFilter}
-              className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
-            >
-              Delete
-            </button>
+                         <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 handleSaveFilter();
+               }}
+               className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
+             >
+               Save
+             </button>
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 handleSaveAsClick();
+               }}
+               className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
+             >
+               Save As...
+             </button>
+             <button
+               onClick={(e) => {
+                 e.stopPropagation();
+                 handleDeleteFilter();
+               }}
+               className="px-3 py-1 text-sm text-white hover:text-gray-300 transition-colors"
+             >
+               Delete
+             </button>
           </div>
-          <button
-            onClick={handleApplyFilter}
-            className="px-4 py-1 text-sm text-white hover:text-gray-300 transition-colors"
-          >
-            Apply
-          </button>
+                     <button
+             onClick={(e) => {
+               e.stopPropagation();
+               handleApplyFilter();
+             }}
+             className="px-4 py-1 text-sm text-white hover:text-gray-300 transition-colors"
+           >
+             Apply
+           </button>
         </div>
 
-        {/* Body */}
-        <div className="p-6 space-y-6">
+                 {/* Body */}
+         <div className="space-y-6" onClick={(e) => e.stopPropagation()}>
           {/* Rooms Section */}
           <div className="space-y-3">
             <div className="flex items-center">
@@ -562,165 +596,145 @@ export default function RoomsFilter({ isOpen, onClose, onApplyFilter, currentFil
           </div>
 
           {/* Status Section */}
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="mx-4 px-3 py-1 text-gray-600 font-medium">AND Status:</span>
-              <div className="flex-1 border-t border-gray-300"></div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {statusOptions.map(option => (
-                <div key={option}>
-                  {renderThreeStateCheckbox(
-                    option, 
-                    status[option], 
-                    toggleStatus, 
-                    option
-                  )}
-                </div>
+          <div className="mb-8">
+            <div className="text-center text-gray-500 mb-4">───────────── Status ─────────────</div>
+            <div className="grid grid-cols-2 gap-4">
+              {statusOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => toggleStatus(option)}
+                  className="flex items-center gap-2 p-2 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  <span className="text-lg">{getCheckboxDisplay(status[option])}</span>
+                  <span className="text-sm capitalize">{option.replace(/-/g, ' ')}</span>
+                </button>
               ))}
             </div>
           </div>
 
           {/* Attributes Section */}
-          <div className="space-y-3">
-            <div className="flex items-center">
-              <div className="flex-1 border-t border-gray-300"></div>
-              <span className="mx-4 px-3 py-1 text-gray-600 font-medium">AND Attributes:</span>
-              <div className="flex-1 border-t border-gray-300"></div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {attributeOptions.map(option => (
-                <div key={option}>
-                  {renderThreeStateCheckbox(
-                    option, 
-                    attributes[option], 
-                    toggleAttribute, 
-                    option
-                  )}
-                </div>
+          <div className="mb-8">
+            <div className="text-center text-gray-500 mb-4">───────────── Attributes ─────────────</div>
+            <div className="grid grid-cols-2 gap-4">
+              {attributeOptions.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => toggleAttribute(option)}
+                  className="flex items-center gap-2 p-2 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  <span className="text-lg">{getCheckboxDisplay(attributes[option])}</span>
+                  <span className="text-sm capitalize">{option.replace(/-/g, ' ')}</span>
+                </button>
               ))}
             </div>
           </div>
-        </div>
+                 </div>
 
-        {/* Footer */}
-        <div className="flex justify-end gap-3 p-6 border-t bg-gray-50">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-
-      {/* Save Modal (informacija korisniku) */}
-      {isSaveModalVisible && (
-        <div className="modal-overlay">
-          <div className="modal-content max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 text-center">
-              <div className="text-lg font-semibold text-gray-800 mb-2">
-                Saving {filterName}...
-              </div>
-              <div className="text-sm text-gray-600">
-                Please wait while your filter is being saved.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Save As Modal */}
-      {isSaveAsModalVisible && (
-        <div className="modal-overlay" onClick={handleSaveAsClose}>
-          <div className="modal-content max-w-sm mx-4 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6">
-              <div className="flex items-center gap-3">
-                <label htmlFor="saveAsName" className="text-sm font-medium text-gray-700 whitespace-nowrap">
-                  Filter Save as:
-                </label>
-                <input
-                  type="text"
-                  id="saveAsName"
-                  value={saveAsName}
-                  onChange={(e) => setSaveAsName(e.target.value)}
-                  onKeyDown={handleSaveAsKeyDown}
-                  className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Enter filter name"
-                  autoFocus
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-             {/* Delete Modal */}
-       {isDeleteModalVisible && deleteFilterInfo && (
-         <div className="modal-overlay" onClick={() => setIsDeleteModalVisible(false)}>
-           <div className="modal-content max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-             <div className="p-6 text-center">
-               <div className="text-lg font-semibold text-gray-800 mb-2">
-                 {deleteFilterInfo.notDeletable ? "Cannot Delete Filter" : "Confirm Deletion"}
-               </div>
-               <div className="text-sm text-gray-600 mb-4">
-                 {deleteFilterInfo.notDeletable ? 
-                   `Filter "${deleteFilterInfo.name}" cannot be deleted as it is a default filter.` :
-                   `Are you sure you want to delete the filter "${deleteFilterInfo.name}"? This action cannot be undone.`
-                 }
-               </div>
-               <div className="flex justify-end gap-3">
-                 <button
-                   onClick={() => setIsDeleteModalVisible(false)}
-                   className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                 >
-                   {deleteFilterInfo.notDeletable ? "OK" : "Cancel"}
-                 </button>
-                 {!deleteFilterInfo.notDeletable && (
-                   <button
-                     onClick={handleConfirmDelete}
-                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                   >
-                     Delete
-                   </button>
-                 )}
+         {/* Save Modal (informacija korisniku) */}
+         {isSaveModalVisible && (
+           <div className="test-modal">
+             <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+               <div className="text-center">
+                 <div className="text-lg font-semibold text-gray-800 mb-2">
+                   Saving {filterName}...
+                 </div>
+                 <div className="text-sm text-gray-600">
+                   Please wait while your filter is being saved.
+                 </div>
                </div>
              </div>
            </div>
-         </div>
-       )}
+         )}
 
-      {/* Overwrite Warning Modal */}
-      {isOverwriteModalVisible && overwriteFilterInfo && (
-        <div className="modal-overlay" onClick={handleOverwriteClose}>
-          <div className="modal-content max-w-sm mx-4" onClick={(e) => e.stopPropagation()}>
-            <div className="p-6 text-center">
-              <div className="text-lg font-semibold text-gray-800 mb-2">
-                Filter Already Exists
-              </div>
-              <div className="text-sm text-gray-600 mb-4">
-                A filter with the name "{overwriteFilterInfo.name}" already exists.
-                Do you want to overwrite it?
-              </div>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={handleOverwriteClose}
-                  className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleOverwriteFilter}
-                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-                >
-                  Overwrite
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
+         {/* Save As Modal */}
+         {isSaveAsModalVisible && (
+           <div className="test-modal" onClick={handleSaveAsClose}>
+             <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+               <div className="flex items-center gap-3">
+                 <label htmlFor="saveAsName" className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                   Filter Save as:
+                 </label>
+                 <input
+                   type="text"
+                   id="saveAsName"
+                   value={saveAsName}
+                   onChange={(e) => setSaveAsName(e.target.value)}
+                   onKeyDown={handleSaveAsKeyDown}
+                   className="flex-1 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   placeholder="Enter filter name"
+                   autoFocus
+                 />
+               </div>
+             </div>
+           </div>
+         )}
+
+         {/* Delete Modal */}
+         {isDeleteModalVisible && deleteFilterInfo && (
+           <div className="test-modal" onClick={() => setIsDeleteModalVisible(false)}>
+             <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+               <div className="text-center">
+                 <div className="text-lg font-semibold text-gray-800 mb-2">
+                   {deleteFilterInfo.notDeletable ? "Cannot Delete Filter" : "Confirm Deletion"}
+                 </div>
+                 <div className="text-sm text-gray-600 mb-4">
+                   {deleteFilterInfo.notDeletable ? 
+                     `Filter "${deleteFilterInfo.name}" cannot be deleted as it is a default filter.` :
+                     `Are you sure you want to delete the filter "${deleteFilterInfo.name}"? This action cannot be undone.`
+                   }
+                 </div>
+                 <div className="flex justify-end gap-3">
+                   <button
+                     onClick={() => setIsDeleteModalVisible(false)}
+                     className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                   >
+                     {deleteFilterInfo.notDeletable ? "OK" : "Cancel"}
+                   </button>
+                   {!deleteFilterInfo.notDeletable && (
+                     <button
+                       onClick={handleConfirmDelete}
+                       className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                     >
+                       Delete
+                     </button>
+                   )}
+                 </div>
+               </div>
+             </div>
+           </div>
+         )}
+
+         {/* Overwrite Warning Modal */}
+         {isOverwriteModalVisible && overwriteFilterInfo && (
+           <div className="test-modal" onClick={handleOverwriteClose}>
+             <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+               <div className="text-center">
+                 <div className="text-lg font-semibold text-gray-800 mb-2">
+                   Filter Already Exists
+                 </div>
+                 <div className="text-sm text-gray-600 mb-4">
+                   A filter with the name "{overwriteFilterInfo.name}" already exists.
+                   Do you want to overwrite it?
+                 </div>
+                 <div className="flex justify-end gap-3">
+                   <button
+                     onClick={handleOverwriteClose}
+                     className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+                   >
+                     Cancel
+                   </button>
+                   <button
+                     onClick={handleOverwriteFilter}
+                     className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                   >
+                     Overwrite
+                   </button>
+                 </div>
+               </div>
+             </div>
+           </div>
+         )}
+       </div>
+     </div>
+   );
+ }

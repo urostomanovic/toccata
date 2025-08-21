@@ -21,7 +21,7 @@ const roomsItems = [
   { label: "Settings", href: "/rooms/settings" },
 ];
 
-export default function ARegionPage() {
+export default function BRegionPage() {
   const router = useRouter();
   const [hotel, setHotel] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +31,6 @@ export default function ARegionPage() {
   const [filteredHotel, setFilteredHotel] = useState([]);
   const [savedFilters, setSavedFilters] = useState([]);
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
-  
-  
 
   // Učitavanje sačuvanih filtera
   useEffect(() => {
@@ -47,9 +45,9 @@ export default function ARegionPage() {
     }
   }, []);
 
-  // Učitavanje sačuvanog filtera za A region
+  // Učitavanje sačuvanog filtera za B region
   useEffect(() => {
-    const savedFilter = localStorage.getItem("toccata-a-region-filter");
+    const savedFilter = localStorage.getItem("toccata-b-region-filter");
     if (savedFilter) {
       try {
         setCurrentFilter(JSON.parse(savedFilter));
@@ -58,8 +56,6 @@ export default function ARegionPage() {
       }
     }
   }, []);
-
-  
 
   // Fetch real rooms data from TOCCATA API
   useEffect(() => {
@@ -122,7 +118,7 @@ export default function ARegionPage() {
     router.push(`/roomtypeone?id=${roomId}`);
   };
 
-  // Parsiranje teksta u brojeve (floors, rooms)
+  // Parsiranje teksta u brojeve
   const parseTextToNumbers = (text) => {
     if (!text.trim()) return [];
     
@@ -148,85 +144,98 @@ export default function ARegionPage() {
     return [...new Set(numbers)].sort((a, b) => a - b);
   };
 
-  // Filtriranje soba prema filter kriterijumima
-  const filterRooms = (allRooms, filter) => {
-    if (!filter) return allRooms;
-
-    return allRooms.map(floor => 
+  // Filtriranje soba
+  const filterRooms = (hotel, filterData) => {
+    if (!filterData) return hotel;
+    
+    return hotel.map(floor => 
       floor.filter(room => {
         // Filtriranje po spratovima
-        if (filter.rooms && filter.rooms.floors) {
-          const floorNumbers = parseTextToNumbers(filter.rooms.floors);
+        if (filterData.rooms && filterData.rooms.floors) {
           const roomFloor = parseInt(room.id.split('.')[0]);
-          if (floorNumbers.length > 0 && !floorNumbers.includes(roomFloor)) {
+          const selectedFloors = parseTextToNumbers(filterData.rooms.floors);
+          if (selectedFloors.length > 0 && !selectedFloors.includes(roomFloor)) {
             return false;
           }
         }
-
+        
         // Filtriranje po sobama
-        if (filter.rooms && filter.rooms.rooms) {
-          const roomNumbers = parseTextToNumbers(filter.rooms.rooms);
+        if (filterData.rooms && filterData.rooms.rooms) {
           const roomNumber = parseInt(room.id.split('.')[1]);
-          if (roomNumbers.length > 0 && !roomNumbers.includes(roomNumber)) {
+          const selectedRooms = parseTextToNumbers(filterData.rooms.rooms);
+          if (selectedRooms.length > 0 && !selectedRooms.includes(roomNumber)) {
             return false;
           }
         }
-
+        
         // Filtriranje po statusu
-        if (filter.status) {
-          const statusFilters = Object.entries(filter.status);
-          const hasStatusFilter = statusFilters.some(([status, value]) => value !== 'none');
-          
-          if (hasStatusFilter) {
-            const roomStatus = room.status;
-            const statusMatch = statusFilters.every(([status, value]) => {
-              if (value === 'none') return true;
-              if (value === 'include') return roomStatus === status;
-              if (value === 'exclude') return roomStatus !== status;
-              return true;
-            });
+        if (filterData.status) {
+          let statusMatch = true;
+          Object.entries(filterData.status).forEach(([statusKey, value]) => {
+            if (value === 'none') return;
             
-            if (!statusMatch) return false;
-          }
+            let roomValue = false;
+            switch (statusKey) {
+              case 'occupied':
+                roomValue = room.status === 'occupied';
+                break;
+              case 'vacant':
+                roomValue = room.status === 'vacant';
+                break;
+              case 'alarm':
+                roomValue = room.icons.includes('alarm');
+                break;
+              case 'to-be-cleaned':
+                roomValue = room.cleanliness === 'DIRTY';
+                break;
+              case 'out-of-order':
+                roomValue = room.status === 'out-of-order';
+                break;
+              default:
+                roomValue = false;
+            }
+            
+            if (value === 'include') return roomValue;
+            if (value === 'exclude') return !roomValue;
+            return true;
+          });
+          
+          if (!statusMatch) return false;
         }
-
+        
         // Filtriranje po atributima
-        if (filter.attributes) {
-          const attributeFilters = Object.entries(filter.attributes);
-          const hasAttributeFilter = attributeFilters.some(([attr, value]) => value !== 'none');
-          
-          if (hasAttributeFilter) {
-            const attributeMatch = attributeFilters.every(([attr, value]) => {
-              if (value === 'none') return true;
-              
-              let roomValue = false;
-              switch (attr) {
-                case 'online':
-                  roomValue = room.online;
-                  break;
-                case 'clean':
-                  roomValue = room.cleanliness === 'CLEAN';
-                  break;
-                case 'a-region':
-                  roomValue = room.id.includes('A') || room.id.startsWith('1');
-                  break;
-                case 'b-region':
-                  roomValue = room.id.includes('B') || room.id.startsWith('2');
-                  break;
-                case 'c-region':
-                  roomValue = room.id.includes('C') || room.id.startsWith('3');
-                  break;
-                default:
-                  roomValue = false;
-              }
-              
-              if (value === 'include') return roomValue;
-              if (value === 'exclude') return !roomValue;
-              return true;
-            });
+        if (filterData.attributes) {
+          let attributeMatch = true;
+          Object.entries(filterData.attributes).forEach(([attrKey, value]) => {
+            if (value === 'none') return;
             
-            if (!attributeMatch) return false;
-          }
+            let roomValue = false;
+            switch (attrKey) {
+              case 'online':
+                roomValue = room.online;
+                break;
+              case 'clean':
+                roomValue = room.cleanliness === 'CLEAN';
+                break;
+              case 'a-region':
+                roomValue = room.id.startsWith('1.');
+                break;
+              case 'b-region':
+                roomValue = room.id.startsWith('2.');
+                break;
+              case 'c-region':
+                roomValue = room.id.startsWith('3.');
+                break;
+              default:
+                roomValue = false;
+            }
+            
+            if (value === 'include') return roomValue;
+            if (value === 'exclude') return !roomValue;
+            return true;
+          });
+          
+          if (!attributeMatch) return false;
         }
 
         return true;
@@ -235,11 +244,11 @@ export default function ARegionPage() {
   };
 
   const handleApplyFilter = (filterData) => {
-    console.log('Applied filter on A region:', filterData);
+    console.log('Applied filter on B region:', filterData);
     setCurrentFilter(filterData);
     
-    // Sačuvaj filter za A region
-    localStorage.setItem("toccata-a-region-filter", JSON.stringify(filterData));
+    // Sačuvaj filter za B region
+    localStorage.setItem("toccata-b-region-filter", JSON.stringify(filterData));
     
     // Primeni filtriranje
     const filtered = filterRooms(hotel, filterData);
@@ -248,7 +257,7 @@ export default function ARegionPage() {
 
   const handleFilterSelect = (filter) => {
     setCurrentFilter(filter);
-    localStorage.setItem("toccata-a-region-filter", JSON.stringify(filter));
+    localStorage.setItem("toccata-b-region-filter", JSON.stringify(filter));
     setIsFilterDropdownOpen(false);
     
     // Primeni filtriranje
@@ -290,7 +299,7 @@ export default function ARegionPage() {
         <div className="p-4">
                      {/* Filter Header */}
            <div className="flex justify-between items-center mb-6">
-             <h1 className="text-2xl font-bold text-gray-800">A Region</h1>
+             <h1 className="text-2xl font-bold text-gray-800">B Region</h1>
              
              {/* Filter Dropdown - Centered */}
              <div className="relative filter-dropdown">
@@ -374,8 +383,6 @@ export default function ARegionPage() {
         onApplyFilter={handleApplyFilter}
         currentFilter={currentFilter}
       />
-
-             
     </>
   );
 }
