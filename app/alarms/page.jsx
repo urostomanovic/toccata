@@ -191,6 +191,15 @@ export default function AlarmsPage() {
   const handleApplyFilter = (filterData) => {
     const filtered = filterAlarms(alarms, filterData);
     setFilteredAlarms(filtered);
+    
+    // Ažuriraj currentFilter sa imenom trenutnog filtera
+    if (currentFilter) {
+      const updatedFilter = {
+        ...currentFilter,
+        data: filterData
+      };
+      setCurrentFilter(updatedFilter);
+    }
   };
 
   // Callback za ažuriranje savedFilters kada se doda novi filter

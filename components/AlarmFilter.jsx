@@ -229,6 +229,20 @@ export default function AlarmFilter({ isOpen, onClose, onApplyFilter, currentFil
   };
 
   const handleApply = () => {
+    // Update the current filter with the new data
+    if (selectedFilter !== "All Alarms") {
+      const updatedFilters = savedFilters.map(f => 
+        f.name === selectedFilter ? { name: selectedFilter, data: filterData } : f
+      );
+      setSavedFilters(updatedFilters);
+      localStorage.setItem("toccata-saved-alarm-filters", JSON.stringify(updatedFilters));
+      
+      // Notify parent component about filter update
+      if (onFilterUpdate) {
+        onFilterUpdate();
+      }
+    }
+    
     onApplyFilter(filterData);
     onClose();
   };
@@ -275,10 +289,27 @@ export default function AlarmFilter({ isOpen, onClose, onApplyFilter, currentFil
                        <div className="bg-gray-800 text-white p-4 rounded-lg mb-8">
              <div className="flex justify-between items-center">
                <div className="flex gap-4">
-                 <button onClick={handleOpen} className="flex items-center gap-1 hover:text-gray-300">
-                   Open
-                   <ChevronDownIcon className="h-4 w-4" />
-                 </button>
+                 <div className="relative">
+                   <button onClick={handleOpen} className="flex items-center gap-1 hover:text-gray-300">
+                     Open
+                     <ChevronDownIcon className="h-4 w-4" />
+                   </button>
+                   
+                                       {/* Dropdown for Open */}
+                    {showDropdown && (
+                      <div className="absolute bg-white border border-gray-300 rounded-lg shadow-lg z-60 mt-1 w-48" style={{ top: '100%', left: '0' }}>
+                        {savedFilters.map((filter) => (
+                          <button
+                            key={filter.name}
+                            onClick={() => handleFilterSelect(filter.name)}
+                            className="block w-full text-left px-4 py-2 hover:bg-gray-100 text-black"
+                          >
+                            {filter.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                 </div>
                  <button onClick={handleSave} className="hover:text-gray-300">Save</button>
                  <button onClick={handleSaveAs} className="hover:text-gray-300">Save As...</button>
                  <button onClick={handleDelete} className="hover:text-gray-300">Delete</button>
@@ -286,21 +317,6 @@ export default function AlarmFilter({ isOpen, onClose, onApplyFilter, currentFil
                <button onClick={handleApply} className="hover:text-gray-300">Apply</button>
              </div>
            </div>
-
-                     {/* Dropdown for Open */}
-                     {showDropdown && (
-                       <div className="absolute bg-white border border-gray-300 rounded-lg shadow-lg z-60 mt-1 w-48" style={{ top: '60px', left: '20px' }}>
-                         {savedFilters.map((filter) => (
-                           <button
-                             key={filter.name}
-                             onClick={() => handleFilterSelect(filter.name)}
-                             className="block w-full text-left px-4 py-2 hover:bg-gray-100"
-                           >
-                             {filter.name}
-                           </button>
-                         ))}
-                       </div>
-                     )}
 
                      
 
