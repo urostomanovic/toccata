@@ -280,7 +280,7 @@ export default function AlarmsPage() {
       <>
         <Navbar />
         <AlarmsSubnav />
-        <div className="pt-24 px-6">
+        <div className="pt-32 px-6">
           <div className="flex justify-center items-center h-64">
             <div className="text-lg">Loading alarms...</div>
           </div>
@@ -294,7 +294,7 @@ export default function AlarmsPage() {
       <Navbar />
       <AlarmsSubnav />
       
-      <div className="pt-24 px-6">
+      <div className="pt-32 px-6">
         <div className="sticky top-24 bg-white z-20 pb-4 border-b border-gray-200">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">Alarms Table</h1>

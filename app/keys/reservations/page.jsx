@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 // Mock podaci za rezervacije
 const mockReservations = [
@@ -94,6 +94,83 @@ const mockReservations = [
     reservationStatus: "Pending",
     phone: "+1 555-0130",
     email: "jennifer.taylor@email.com"
+  },
+  {
+    id: 9,
+    guestName: "Alex Thompson",
+    roomNumber: "303",
+    checkIn: "30-08-2025",
+    checkOut: "02-09-2025",
+    keyStatus: "Active",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0131",
+    email: "alex.thompson@email.com"
+  },
+  {
+    id: 10,
+    guestName: "Emma Wilson",
+    roomNumber: "401",
+    checkIn: "31-08-2025",
+    checkOut: "03-09-2025",
+    keyStatus: "Lost",
+    reservationStatus: "Pending",
+    phone: "+1 555-0132",
+    email: "emma.wilson@email.com"
+  },
+  {
+    id: 11,
+    guestName: "James Anderson",
+    roomNumber: "402",
+    checkIn: "01-09-2025",
+    checkOut: "04-09-2025",
+    keyStatus: "Active",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0133",
+    email: "james.anderson@email.com"
+  },
+  {
+    id: 12,
+    guestName: "Sophie Martinez",
+    roomNumber: "403",
+    checkIn: "02-09-2025",
+    checkOut: "05-09-2025",
+    keyStatus: "Invalidated",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0134",
+    email: "sophie.martinez@email.com"
+  },
+  {
+    id: 13,
+    guestName: "William Davis",
+    roomNumber: "501",
+    checkIn: "03-09-2025",
+    checkOut: "06-09-2025",
+    keyStatus: "Active",
+    reservationStatus: "Pending",
+    phone: "+1 555-0135",
+    email: "william.davis@email.com"
+  },
+  {
+    id: 14,
+    guestName: "Olivia Johnson",
+    roomNumber: "502",
+    checkIn: "04-09-2025",
+    checkOut: "07-09-2025",
+    keyStatus: "Active",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0136",
+    email: "olivia.johnson@email.com"
+  },
+  {
+    id: 15,
+    guestName: "Daniel Brown",
+    roomNumber: "503",
+    checkIn: "05-09-2025",
+    checkOut: "08-09-2025",
+    keyStatus: "Lost",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0137",
+    email: "daniel.brown@email.com"
   }
 ];
 
@@ -105,8 +182,40 @@ export default function ReservationsPage() {
   const [currentFilter, setCurrentFilter] = useState(null);
   const [savedFilters, setSavedFilters] = useState([]);
   const [filteredReservations, setFilteredReservations] = useState(mockReservations);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(null);
 
+  // Apply search filter when searchTerm changes
+  useEffect(() => {
+    if (currentFilter && currentFilter.data) {
+      handleApplyFilter(currentFilter.data);
+    } else {
+      // If no filter is applied, just apply search
+      let filtered = mockReservations;
+      if (searchTerm.trim()) {
+        filtered = filtered.filter(reservation =>
+          reservation.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reservation.roomNumber.includes(searchTerm) ||
+          reservation.phone.includes(searchTerm) ||
+          reservation.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reservation.keyStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          reservation.reservationStatus.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      setFilteredReservations(filtered);
+    }
+  }, [searchTerm]);
 
+  const handleEditReservation = (reservation) => {
+    setSelectedReservation(reservation);
+    setIsEditModalOpen(true);
+  };
+
+  const closeEditModal = () => {
+    setIsEditModalOpen(false);
+    setSelectedReservation(null);
+  };
 
   // Load saved filters on component mount
   useEffect(() => {
@@ -239,6 +348,18 @@ export default function ReservationsPage() {
     
     let filtered = mockReservations;
 
+    // Search filter - applies to all text fields
+    if (searchTerm.trim()) {
+      filtered = filtered.filter(reservation =>
+        reservation.guestName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.roomNumber.includes(searchTerm) ||
+        reservation.phone.includes(searchTerm) ||
+        reservation.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.keyStatus.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        reservation.reservationStatus.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
     // Filter by guest name
     if (filterData.guestName) {
       filtered = filtered.filter(reservation =>
@@ -311,47 +432,62 @@ export default function ReservationsPage() {
       <main className="pt-32 pb-6 px-6">
         <div className="p-4">
           {/* Filter Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Reservations</h1>
-            
-            {/* Filter Dropdown - Centered */}
-            <div className="relative filter-dropdown">
-              <button
-                onClick={toggleFilterDropdown}
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl font-bold text-gray-800">Reservations</h1>
+              
+              {/* Search Bar */}
+              <div className="relative">
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search reservations..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+              
+              {/* Filter Dropdown */}
+              <div className="relative filter-dropdown">
+                <button
+                  onClick={toggleFilterDropdown}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
                                                                    <span className="text-sm text-gray-700">
                     Selected filter: {currentFilter ? currentFilter.name : "All Reservations"}
                   </span>
                 <ChevronDownIcon className="h-4 w-4 text-gray-500" />
               </button>
-              
-              {/* Dropdown Menu */}
-              {isFilterDropdownOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 min-w-[200px]">
-                  {savedFilters.map((filter) => (
-                    <button
-                      key={filter.name}
-                      onClick={() => handleFilterSelect(filter)}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
-                    >
-                      {filter.name}
-                    </button>
-                  ))}
-                </div>
-              )}
+                
+                {/* Dropdown Menu */}
+                {isFilterDropdownOpen && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 min-w-[200px]">
+                    {savedFilters.map((filter) => (
+                      <button
+                        key={filter.name}
+                        onClick={() => handleFilterSelect(filter)}
+                        className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 first:rounded-t-md last:rounded-b-md"
+                      >
+                        {filter.name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
             
-                                                                                                       <button
-                 onClick={(e) => {
-                   e.preventDefault();
-                   e.stopPropagation();
-                   setIsFilterOpen(true);
-                 }}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                Edit Filter
-              </button>
+            {/* Edit Filter Button */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsFilterOpen(true);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Edit Filter
+            </button>
           </div>
           
           {/* Tabela sa fiksnim zaglavljem */}
@@ -372,7 +508,7 @@ export default function ReservationsPage() {
             </div>
             
             {/* Skrolabilno telo tabele */}
-            <div className="max-h-96 overflow-y-auto">
+            <div className="max-h-[32rem] overflow-y-auto">
               {filteredReservations.map((reservation) => (
                 <div
                   key={reservation.id}
@@ -407,11 +543,11 @@ export default function ReservationsPage() {
                     {reservation.email}
                   </div>
                   <div className="flex gap-2">
-                    <button className="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                    <button 
+                      onClick={() => handleEditReservation(reservation)}
+                      className="px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
                       Edit
-                    </button>
-                    <button className="text-red-600 hover:text-red-800 text-xs font-medium">
-                      Delete
                     </button>
                   </div>
                 </div>
@@ -429,6 +565,90 @@ export default function ReservationsPage() {
         currentFilter={currentFilter}
         onFilterUpdate={handleFilterUpdate}
       />
+
+      {/* Edit Reservation Modal */}
+      {isEditModalOpen && selectedReservation && (
+        <div className="test-modal" onClick={closeEditModal}>
+          <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">Edit Reservation</h2>
+              <button
+                onClick={closeEditModal}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.guestName}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.roomNumber}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check In</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.checkIn}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check Out</label>
+                <div className="p-4 bg-gray-50 rounded-md border">
+                  {selectedReservation.checkOut}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Key Status</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.keyStatus}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reservation Status</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.reservationStatus}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.phone}
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <div className="p-3 bg-gray-50 rounded-md border">
+                  {selectedReservation.email}
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={closeEditModal}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
