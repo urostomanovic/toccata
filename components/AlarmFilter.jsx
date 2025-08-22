@@ -243,6 +243,14 @@ export default function AlarmFilter({ isOpen, onClose, onApplyFilter, currentFil
       }
     }
     
+    // Sačuvaj aktivan filter u localStorage
+    const activeFilter = {
+      name: selectedFilter,
+      data: filterData
+    };
+    localStorage.setItem("toccata-current-alarm-filter", JSON.stringify(activeFilter));
+    localStorage.setItem("toccata-last-active-alarms-filter", JSON.stringify(activeFilter));
+    
     onApplyFilter(filterData);
     onClose();
   };

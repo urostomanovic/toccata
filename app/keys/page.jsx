@@ -1,26 +1,49 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import Subnav from "@/components/RoomsSubnav";
-
-const keysItems = [
-  { label: "Keys Item 1", href: "/keys/keys_item1" },
-  { label: "Keys Item 2", href: "/keys/keys_item2" },
-  { label: "Keys Item 3", href: "/keys/keys_item3" },
-  { label: "Keys Item 4", href: "/keys/keys_item4" },
-  { label: "Keys Item 5", href: "/keys/keys_item5" },
-];
+import KeysSubnav from "@/components/KeysSubnav";
 
 export default function KeysPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    // Proveri localStorage za poslednju aktivnu Keys stranicu
+    const lastActiveKeysPage = localStorage.getItem("toccata-last-active-keys-page");
+    
+    if (lastActiveKeysPage) {
+      // Proveri da li postoji sačuvan filter za tu stranicu
+      const lastActiveFilter = localStorage.getItem("toccata-last-active-keys-filter");
+      
+      if (lastActiveFilter && lastActiveKeysPage === "/keys/reservations") {
+        // Ako postoji sačuvan filter za reservations, osiguraj da se učita
+        try {
+          const parsedFilter = JSON.parse(lastActiveFilter);
+          // Sačuvaj filter u reservations-specific localStorage
+          localStorage.setItem("toccata-current-reservation-filter", lastActiveFilter);
+        } catch (error) {
+          console.error("Error parsing last active filter:", error);
+        }
+      }
+      
+      // Preusmeri na poslednju aktivnu stranicu
+      router.replace(lastActiveKeysPage);
+    } else {
+      // Ako nema sačuvane stranice, preusmeri na Reservations kao default
+      router.replace("/keys/reservations");
+    }
+  }, [router]);
+
   return (
     <>
       <Navbar />
-      <Subnav items={keysItems} />
-      <main className="pt-24 pb-6 px-6">
+      <KeysSubnav />
+      <main className="pt-32 pb-6 px-6">
         <div className="p-4">
           <h1 className="text-2xl font-bold mb-6">Keys Management</h1>
           <div className="bg-white p-6 rounded-lg shadow">
             <p className="text-gray-600">
-              Keys management system - coming soon...
+              Preusmeravanje na poslednju aktivnu stranicu...
             </p>
           </div>
         </div>
