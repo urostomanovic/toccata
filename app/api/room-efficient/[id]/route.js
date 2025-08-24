@@ -5,7 +5,7 @@ export async function GET(request, { params }) {
   const startTime = Date.now();
   
   try {
-    const roomId = params.id;
+    const roomId = (await params).id;
     
          // Lista parametara koje želimo da dohvatimo za sobu (prava imena iz TOCCATA sistema)
      const parameters = [
