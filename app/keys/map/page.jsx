@@ -1,9 +1,46 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
 import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+
+// Mock podaci za rezervacije
+const mockReservations = [
+  {
+    id: 1,
+    guestName: "John Smith",
+    roomNumber: "101",
+    checkIn: "25-08-2025",
+    checkOut: "28-08-2025",
+    keyStatus: "Active",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0123",
+    email: "john.smith@email.com"
+  },
+  {
+    id: 2,
+    guestName: "Maria Garcia",
+    roomNumber: "102",
+    checkIn: "26-08-2025",
+    checkOut: "29-08-2025",
+    keyStatus: "Lost",
+    reservationStatus: "Confirmed",
+    phone: "+1 555-0124",
+    email: "maria.garcia@email.com"
+  },
+  {
+    id: 3,
+    guestName: "David Johnson",
+    roomNumber: "103",
+    checkIn: "27-08-2025",
+    checkOut: "30-08-2025",
+    keyStatus: "Active",
+    reservationStatus: "Pending",
+    phone: "+1 555-0125",
+    email: "david.johnson@email.com"
+  }
+];
 
 export default function MapPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -11,6 +48,153 @@ export default function MapPage() {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [currentFilter, setCurrentFilter] = useState(null);
   const [savedFilters, setSavedFilters] = useState([]);
+  const [startDate, setStartDate] = useState(new Date());
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStartX, setDragStartX] = useState(0);
+  const [dragStartDate, setDragStartDate] = useState(null);
+  const headerRef = useRef(null);
+
+  // Konstante za fluid scroll
+  const VISIBLE_DAYS = 21; // 3 nedelje
+  const DAY_WIDTH = 50; // px po danu
+
+  // Funkcija za računanje broja nedelje u godini
+  const getWeekNumber = (date) => {
+    const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
+  };
+
+  // Generisanje datuma za header (21 dan - 3 nedelje)
+  const generateDateHeaders = (start) => {
+    const headers = [];
+    
+    for (let i = 0; i < VISIBLE_DAYS; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayNumber = date.getDate();
+      
+      headers.push({
+        day: dayName,
+        date: dayNumber,
+        fullDate: date.toLocaleDateString('sr-RS', { 
+          day: '2-digit', 
+          month: '2-digit', 
+          year: 'numeric' 
+        })
+      });
+    }
+    
+    return headers;
+  };
+
+  // Generisanje nedelja header-a - fluid scroll
+  const generateWeekHeaders = (start) => {
+    const headers = [];
+    const weekMap = new Map(); // Map za praćenje nedelja i njihovih dana
+    
+    // Prođi kroz sve vidljive dane i grupisi ih po nedeljama
+    for (let i = 0; i < VISIBLE_DAYS; i++) {
+      const currentDate = new Date(start);
+      currentDate.setDate(start.getDate() + i);
+      
+      // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
+      const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+      const weekStartDate = new Date(currentDate);
+      weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+      
+      const weekKey = weekStartDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const weekNumber = getWeekNumber(weekStartDate);
+      
+      if (!weekMap.has(weekKey)) {
+        weekMap.set(weekKey, {
+          weekNumber: weekNumber,
+          startIndex: i,
+          days: []
+        });
+      }
+      
+      weekMap.get(weekKey).days.push(i);
+    }
+    
+    // Konvertuj map u array i sortiraj po startIndex
+    return Array.from(weekMap.values()).sort((a, b) => a.startIndex - b.startIndex);
+  };
+
+  // Generisanje mesec header-a (3 nedelje)
+  const generateMonthHeaders = (start) => {
+    const headers = [];
+    
+    for (let i = 0; i < VISIBLE_DAYS; i++) {
+      const date = new Date(start);
+      date.setDate(start.getDate() + i);
+      
+      const year = date.getFullYear();
+      const month = date.toLocaleDateString('en-US', { month: 'short' });
+      
+      headers.push({
+        year: year,
+        month: month,
+        isFirstDayOfMonth: date.getDate() === 1
+      });
+    }
+    
+    return headers;
+  };
+
+  const dateHeaders = generateDateHeaders(startDate);
+  const weekHeaders = generateWeekHeaders(startDate);
+  const monthHeaders = generateMonthHeaders(startDate);
+
+  // Drag handlers
+  const handleMouseDown = (e) => {
+    setIsDragging(true);
+    setDragStartX(e.clientX);
+    setDragStartDate(new Date(startDate));
+    e.preventDefault();
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    
+    const deltaX = e.clientX - dragStartX;
+    const daysToMove = Math.round(deltaX / DAY_WIDTH);
+    
+    if (daysToMove !== 0) {
+      const newStartDate = new Date(dragStartDate);
+      newStartDate.setDate(dragStartDate.getDate() - daysToMove);
+      setStartDate(newStartDate);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  // Add global mouse event listeners
+  useEffect(() => {
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
+    } else {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'default';
+      document.body.style.userSelect = 'auto';
+    };
+  }, [isDragging, dragStartX, dragStartDate]);
 
   // Load saved filters on component mount
   useEffect(() => {
@@ -74,6 +258,23 @@ export default function MapPage() {
     setIsFilterOpen(false);
   };
 
+     // Funkcija za određivanje boje nedelje - fluid scroll
+   const getWeekColor = (currentDate) => {
+     // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
+     const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+     const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+     const weekStartDate = new Date(currentDate);
+     weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+     
+     // Izračunaj broj nedelje za ovaj ponedeljak
+     const weekNumber = getWeekNumber(weekStartDate);
+     
+           // Koristi broj nedelje za određivanje boje - samo plava i zelena
+      const colors = ['bg-blue-50', 'bg-green-50'];
+      const colorIndex = (weekNumber - 1) % 2; // -1 jer weekNumber počinje od 1, % 2 za samo 2 boje
+      return colors[colorIndex] || 'bg-gray-50';
+   };
+
   return (
     <>
       <Navbar />
@@ -135,11 +336,155 @@ export default function MapPage() {
             </button>
           </div>
           
-          {/* Glavni sadržaj */}
-          <div className="bg-white rounded-lg shadow p-8">
-            <div className="text-center text-gray-500">
+          {/* Tabela sa header-om */}
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            {/* Header tabele sa 3 reda - draggable */}
+            <div 
+              ref={headerRef}
+              className={`bg-gray-50 border-b border-gray-200 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+              onMouseDown={handleMouseDown}
+              style={{ userSelect: 'none' }}
+            >
+              {/* Red 1: Godina + Mesec */}
+              <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                {/* Prazno polje za broj sobe */}
+                <div className="px-4 py-1 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
+                  Room
+                </div>
+                
+                                 {/* Godina + Mesec - fluid scroll */}
+                 {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
+                   const currentDate = new Date(startDate);
+                   currentDate.setDate(startDate.getDate() + index);
+                   
+                   // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
+                   const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+                   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+                   const weekStartDate = new Date(currentDate);
+                   weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+                   
+                                                                                                                           // Proveri da li je ovo prvi dan ove nedelje (ponedeljak)
+                      const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
+                     
+                     if (isFirstDayOfWeek) {
+                       // Izračunaj koliko dana traje ova nedelja (do sledećeg ponedeljka ili kraja vidljivog perioda)
+                       const daysInWeek = Math.min(7, VISIBLE_DAYS - index);
+                       
+                       // Prikaži mesec ako ima najmanje 2 dana, osim ako je prva ili poslednja nedelja sa samo 1 danom
+                       if (daysInWeek >= 2 && !(index === 0 && daysInWeek === 1) && !(index + daysInWeek >= VISIBLE_DAYS && daysInWeek === 1)) {
+                       const year = weekStartDate.getFullYear();
+                       const month = weekStartDate.toLocaleDateString('en-US', { month: 'short' });
+                       
+                       return (
+                         <div
+                           key={index}
+                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
+                             index === 0 ? 'border-l-2 border-l-blue-300' : ''
+                           }`}
+                           style={{ 
+                             gridColumn: `${index + 2} / span ${daysInWeek}`
+                           }}
+                         >
+                           <div className="font-medium">{year} {month}</div>
+                         </div>
+                       );
+                     }
+                   }
+                   
+                   return null;
+                 })}
+              </div>
+              
+              {/* Red 2: Nedelje */}
+              <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                {/* Prazno polje za broj sobe */}
+                <div className="px-4 py-1 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
+                  Room
+                </div>
+                
+                                 {/* Nedelje - fluid scroll */}
+                 {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
+                   const currentDate = new Date(startDate);
+                   currentDate.setDate(startDate.getDate() + index);
+                   
+                   // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
+                   const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+                   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+                   const weekStartDate = new Date(currentDate);
+                   weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+                   
+                                                                                                                           // Proveri da li je ovo prvi dan ove nedelje (ponedeljak)
+                      const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
+                     
+                     if (isFirstDayOfWeek) {
+                       // Izračunaj koliko dana traje ova nedelja (do sledećeg ponedeljka ili kraja vidljivog perioda)
+                       const daysInWeek = Math.min(7, VISIBLE_DAYS - index);
+                       
+                       // Prikaži nedelju ako ima najmanje 2 dana, osim ako je prva ili poslednja nedelja sa samo 1 danom
+                       if (daysInWeek >= 2 && !(index === 0 && daysInWeek === 1) && !(index + daysInWeek >= VISIBLE_DAYS && daysInWeek === 1)) {
+                       const weekNumber = getWeekNumber(weekStartDate);
+                       
+                       return (
+                         <div
+                           key={index}
+                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
+                             index === 0 ? 'border-l-2 border-l-blue-300' : ''
+                           }`}
+                           style={{ 
+                             gridColumn: `${index + 2} / span ${daysInWeek}`
+                           }}
+                         >
+                           <div className="font-medium">Week {weekNumber}</div>
+                         </div>
+                       );
+                     }
+                   }
+                   
+                   return null;
+                 })}
+              </div>
+              
+              {/* Red 3: Dani */}
+              <div className="grid gap-0" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                {/* Prazno polje za broj sobe */}
+                <div className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
+                  Room
+                </div>
+                
+                                 {/* Datumi */}
+                 {dateHeaders.map((header, index) => {
+                   const currentDate = new Date(startDate);
+                   currentDate.setDate(startDate.getDate() + index);
+                   
+                   // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
+                   const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+                   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+                   const weekStartDate = new Date(currentDate);
+                   weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+                   
+                   // Proveri da li je ovo prvi dan nedelje (ponedeljak)
+                   const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
+                   
+                   return (
+                     <div
+                       key={index}
+                       className={`px-1 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
+                         isFirstDayOfWeek ? 'border-l-2 border-l-blue-300' : ''
+                       }`}
+                     >
+                       <div className="font-medium leading-tight">{header.day} {header.date}</div>
+                     </div>
+                   );
+                 })}
+              </div>
+            </div>
+            
+            {/* Telo tabele - placeholder za sada */}
+            <div className="p-8 text-center text-gray-500">
               <h2 className="text-xl font-semibold mb-2">Reservation Map</h2>
-              <p>Ovde će biti implementirana nova verzija mape rezervacija</p>
+              <p>Ovde će biti implementirane sobe i rezervacije</p>
+              <p className="text-sm mt-2">💡 Pokušaj da uhvatiš header i pomeriš ga levo/desno!</p>
+                             <p className="text-xs mt-1 text-blue-600">Plava i zelena pozadina označava različite nedelje</p>
             </div>
           </div>
         </div>
