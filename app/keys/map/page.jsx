@@ -145,9 +145,60 @@ export default function MapPage() {
     return headers;
   };
 
+  // Funkcija za određivanje gde treba da se prikaže nedelja
+  const getWeekDisplayInfo = (start) => {
+    const weekInfo = [];
+    
+    // Odredi koji je prvi dan u view-u
+    const firstDayOfView = new Date(start);
+    const firstDayOfWeek = firstDayOfView.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+    
+    // Odredi prikaz na osnovu prvog dana
+    let displayPattern;
+    if (firstDayOfWeek === 0) {
+      // Nedelja: 0,1,1,1 - ne prikazuj prvu, prikazuj druge tri
+      displayPattern = [false, true, true, true];
+    } else if (firstDayOfWeek === 1) {
+      // Ponedeljak: 1,1,1,0 - prikazuj prve tri, ne prikazuj poslednju
+      displayPattern = [true, true, true, false];
+    } else if (firstDayOfWeek === 2) {
+      // Utorak: 1,1,1,0 - prikazuj prve tri, ne prikazuj poslednju
+      displayPattern = [true, true, true, false];
+    } else {
+      // Ostali dani (3-6): 1,1,1,1 - prikazuj sve četiri
+      displayPattern = [true, true, true, true];
+    }
+    
+
+    
+    // Generiši nedelje prema pattern-u
+    for (let weekIndex = 0; weekIndex < 4; weekIndex++) {
+      if (displayPattern[weekIndex]) {
+        const weekStartDate = new Date(start);
+        weekStartDate.setDate(start.getDate() + (weekIndex * 7) - firstDayOfWeek);
+        
+        const weekNumber = getWeekNumber(weekStartDate);
+        const daysInWeek = weekIndex === 0 ? 7 - firstDayOfWeek : (weekIndex === 3 ? firstDayOfWeek : 7);
+        
+        // Izračunaj poziciju na osnovu stvarnog prvog dana nedelje u view-u
+        let index = Math.max(0, weekIndex * 7 - firstDayOfWeek);
+        
+        weekInfo.push({
+          index: index,
+          weekNumber: weekNumber,
+          daysInWeek: daysInWeek,
+          weekStartDate: weekStartDate
+        });
+      }
+    }
+    
+    return weekInfo;
+  };
+
   const dateHeaders = generateDateHeaders(startDate);
   const weekHeaders = generateWeekHeaders(startDate);
   const monthHeaders = generateMonthHeaders(startDate);
+  const weekDisplayInfo = getWeekDisplayInfo(startDate);
 
   // Drag handlers
   const handleMouseDown = (e) => {
@@ -378,9 +429,7 @@ export default function MapPage() {
                        return (
                          <div
                            key={index}
-                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
-                             index === 0 ? 'border-l-2 border-l-blue-300' : ''
-                           }`}
+                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)}`}
                            style={{ 
                              gridColumn: `${index + 2} / span ${daysInWeek}`
                            }}
@@ -413,34 +462,48 @@ export default function MapPage() {
                    const weekStartDate = new Date(currentDate);
                    weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
                    
-                                                                                                                           // Proveri da li je ovo prvi dan ove nedelje (ponedeljak)
-                      const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
-                     
-                     if (isFirstDayOfWeek) {
-                       // Izračunaj koliko dana traje ova nedelja (do sledećeg ponedeljka ili kraja vidljivog perioda)
-                       const daysInWeek = Math.min(7, VISIBLE_DAYS - index);
-                       
-                       // Prikaži nedelju ako ima najmanje 2 dana, osim ako je prva ili poslednja nedelja sa samo 1 danom
-                       if (daysInWeek >= 2 && !(index === 0 && daysInWeek === 1) && !(index + daysInWeek >= VISIBLE_DAYS && daysInWeek === 1)) {
-                       const weekNumber = getWeekNumber(weekStartDate);
-                       
-                       return (
-                         <div
-                           key={index}
-                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
-                             index === 0 ? 'border-l-2 border-l-blue-300' : ''
-                           }`}
-                           style={{ 
-                             gridColumn: `${index + 2} / span ${daysInWeek}`
-                           }}
-                         >
-                           <div className="font-medium">Week {weekNumber}</div>
-                         </div>
-                       );
-                     }
+                   // Proveri da li je ovo prvi dan nedelje (ponedeljak) ili prvi prikazani dan
+                   const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
+                   const isFirstVisibleDay = index === 0;
+                   
+
+                   
+                   // Prikaži nedelju ako je prvi dan nedelje ILI ako je prvi prikazani dan
+                   if (!isFirstDayOfWeek && !isFirstVisibleDay) {
+                     return null;
                    }
                    
-                   return null;
+                   // Izračunaj koliko dana traje ova nedelja
+                   let daysInWeek;
+                   if (isFirstVisibleDay) {
+                     // Za prvi prikazani dan, računaj koliko dana ostaje do kraja nedelje
+                     // dayOfWeek: 0=nedelja, 1=ponedeljak, 2=utorak, ..., 6=subota
+                     // Ako je nedelja (0), ostaje 1 dan; ako je ponedeljak (1), ostaje 7 dana
+                     const daysToEndOfWeek = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
+                     daysInWeek = Math.min(daysToEndOfWeek, VISIBLE_DAYS);
+                   } else {
+                     // Za ostale dane, koristi standardnu logiku
+                     daysInWeek = Math.min(7, VISIBLE_DAYS - index);
+                   }
+                   
+                   // Proveri da li je ovo poslednja nedelja (kraj vidljivog perioda)
+                   const isLastWeek = index + daysInWeek >= VISIBLE_DAYS;
+                   
+                   return (
+                     <div
+                       key={index}
+                       className={`px-1 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
+                         (isFirstDayOfWeek && index > 0) || (isFirstVisibleDay && dayOfWeek === 1) ? 'border-l-2 border-l-blue-300' : ''
+                       }`}
+                       style={{ 
+                         gridColumn: `${index + 2} / span ${daysInWeek}`
+                       }}
+                     >
+                       <div className="font-medium">
+                         {daysInWeek > 1 ? `Week ${getWeekNumber(weekStartDate)}` : ''}
+                       </div>
+                     </div>
+                   );
                  })}
               </div>
               
