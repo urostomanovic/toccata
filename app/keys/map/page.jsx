@@ -326,6 +326,15 @@ export default function MapPage() {
       return colors[colorIndex] || 'bg-gray-50';
    };
 
+  // Funkcija za boju meseca (žuta/narandžasta)
+  const getMonthColor = (currentDate) => {
+    const month = currentDate.getMonth(); // 0-11
+    const year = currentDate.getFullYear();
+    const monthKey = year * 12 + month; // Jedinstveni ključ za mesec
+    
+    return monthKey % 2 === 0 ? 'bg-yellow-100' : 'bg-orange-100';
+  };
+
   return (
     <>
       <Navbar />
@@ -408,39 +417,40 @@ export default function MapPage() {
                    const currentDate = new Date(startDate);
                    currentDate.setDate(startDate.getDate() + index);
                    
-                   // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
-                   const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
-                   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
-                   const weekStartDate = new Date(currentDate);
-                   weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+                   // Proveri da li je ovo prvi dan meseca ili prvi prikazani dan
+                   const isFirstDayOfMonth = currentDate.getDate() === 1;
+                   const isFirstVisibleDay = index === 0;
                    
-                                                                                                                           // Proveri da li je ovo prvi dan ove nedelje (ponedeljak)
-                      const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
-                     
-                     if (isFirstDayOfWeek) {
-                       // Izračunaj koliko dana traje ova nedelja (do sledećeg ponedeljka ili kraja vidljivog perioda)
-                       const daysInWeek = Math.min(7, VISIBLE_DAYS - index);
-                       
-                       // Prikaži mesec ako ima najmanje 2 dana, osim ako je prva ili poslednja nedelja sa samo 1 danom
-                       if (daysInWeek >= 2 && !(index === 0 && daysInWeek === 1) && !(index + daysInWeek >= VISIBLE_DAYS && daysInWeek === 1)) {
-                       const year = weekStartDate.getFullYear();
-                       const month = weekStartDate.toLocaleDateString('en-US', { month: 'short' });
-                       
-                       return (
-                         <div
-                           key={index}
-                           className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)}`}
-                           style={{ 
-                             gridColumn: `${index + 2} / span ${daysInWeek}`
-                           }}
-                         >
-                           <div className="font-medium">{year} {month}</div>
-                         </div>
-                       );
-                     }
+                   // Prikaži mesec ako je prvi dan meseca ILI ako je prvi prikazani dan
+                   if (!isFirstDayOfMonth && !isFirstVisibleDay) {
+                     return null;
                    }
                    
-                   return null;
+                   // Izračunaj koliko dana traje ovaj mesec
+                   let daysInMonth;
+                   if (isFirstVisibleDay) {
+                     // Za prvi prikazani dan, računaj koliko dana ostaje do kraja meseca
+                     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                     daysInMonth = Math.min(lastDayOfMonth - currentDate.getDate() + 1, VISIBLE_DAYS);
+                   } else {
+                     // Za ostale dane, koristi standardnu logiku
+                     const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
+                     daysInMonth = Math.min(lastDayOfMonth - currentDate.getDate() + 1, VISIBLE_DAYS - index);
+                   }
+                   
+                   return (
+                     <div
+                       key={index}
+                       className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getMonthColor(currentDate)}`}
+                       style={{ 
+                         gridColumn: `${index + 2} / span ${daysInMonth}`
+                       }}
+                     >
+                       <div className="font-medium">
+                         {daysInMonth > 1 ? `${currentDate.getFullYear()} ${currentDate.toLocaleDateString('en-US', { month: 'short' })}` : ''}
+                       </div>
+                     </div>
+                   );
                  })}
               </div>
               
