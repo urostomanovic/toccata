@@ -4,285 +4,7 @@ import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
 import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-
-// Mock podaci za rezervacije
-const mockReservations = [
-  {
-    id: 1,
-    guestName: "John Smith",
-    roomNumber: "101",
-    checkIn: "25-08-2025",
-    checkOut: "28-08-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0123",
-    email: "john.smith@email.com"
-  },
-  {
-    id: 2,
-    guestName: "Maria Garcia",
-    roomNumber: "102",
-    checkIn: "26-08-2025",
-    checkOut: "29-08-2025",
-    keyStatus: "Lost",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0124",
-    email: "maria.garcia@email.com"
-  },
-  {
-    id: 3,
-    guestName: "David Johnson",
-    roomNumber: "103",
-    checkIn: "27-08-2025",
-    checkOut: "30-08-2025",
-    keyStatus: "Active",
-    reservationStatus: "Pending",
-    phone: "+1 555-0125",
-    email: "david.johnson@email.com"
-  },
-  {
-    id: 4,
-    guestName: "Sarah Wilson",
-    roomNumber: "104",
-    checkIn: "28-08-2025",
-    checkOut: "31-08-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0126",
-    email: "sarah.wilson@email.com"
-  },
-  {
-    id: 5,
-    guestName: "Michael Brown",
-    roomNumber: "105",
-    checkIn: "29-08-2025",
-    checkOut: "01-09-2025",
-    keyStatus: "Invalidated",
-    reservationStatus: "Cancelled",
-    phone: "+1 555-0127",
-    email: "michael.brown@email.com"
-  },
-  {
-    id: 6,
-    guestName: "Emily Davis",
-    roomNumber: "201",
-    checkIn: "30-08-2025",
-    checkOut: "02-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0128",
-    email: "emily.davis@email.com"
-  },
-  {
-    id: 7,
-    guestName: "Robert Miller",
-    roomNumber: "202",
-    checkIn: "31-08-2025",
-    checkOut: "03-09-2025",
-    keyStatus: "Lost",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0129",
-    email: "robert.miller@email.com"
-  },
-  {
-    id: 8,
-    guestName: "Lisa Anderson",
-    roomNumber: "203",
-    checkIn: "01-09-2025",
-    checkOut: "04-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Pending",
-    phone: "+1 555-0130",
-    email: "lisa.anderson@email.com"
-  },
-  {
-    id: 9,
-    guestName: "James Taylor",
-    roomNumber: "204",
-    checkIn: "02-09-2025",
-    checkOut: "05-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0131",
-    email: "james.taylor@email.com"
-  },
-  {
-    id: 10,
-    guestName: "Jennifer White",
-    roomNumber: "205",
-    checkIn: "03-09-2025",
-    checkOut: "06-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0132",
-    email: "jennifer.white@email.com"
-  },
-  {
-    id: 11,
-    guestName: "Christopher Lee",
-    roomNumber: "301",
-    checkIn: "04-09-2025",
-    checkOut: "07-09-2025",
-    keyStatus: "Invalidated",
-    reservationStatus: "Cancelled",
-    phone: "+1 555-0133",
-    email: "christopher.lee@email.com"
-  },
-  {
-    id: 12,
-    guestName: "Amanda Martinez",
-    roomNumber: "302",
-    checkIn: "05-09-2025",
-    checkOut: "08-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0134",
-    email: "amanda.martinez@email.com"
-  },
-  {
-    id: 13,
-    guestName: "Daniel Rodriguez",
-    roomNumber: "303",
-    checkIn: "06-09-2025",
-    checkOut: "09-09-2025",
-    keyStatus: "Lost",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0135",
-    email: "daniel.rodriguez@email.com"
-  },
-  {
-    id: 14,
-    guestName: "Jessica Thompson",
-    roomNumber: "304",
-    checkIn: "07-09-2025",
-    checkOut: "10-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Pending",
-    phone: "+1 555-0136",
-    email: "jessica.thompson@email.com"
-  },
-  {
-    id: 15,
-    guestName: "Matthew Garcia",
-    roomNumber: "305",
-    checkIn: "08-09-2025",
-    checkOut: "11-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0137",
-    email: "matthew.garcia@email.com"
-  },
-  {
-    id: 16,
-    guestName: "Nicole Clark",
-    roomNumber: "306",
-    checkIn: "09-09-2025",
-    checkOut: "12-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0138",
-    email: "nicole.clark@email.com"
-  },
-  {
-    id: 17,
-    guestName: "Kevin Lewis",
-    roomNumber: "307",
-    checkIn: "10-09-2025",
-    checkOut: "13-09-2025",
-    keyStatus: "Lost",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0139",
-    email: "kevin.lewis@email.com"
-  },
-  {
-    id: 18,
-    guestName: "Rachel Hall",
-    roomNumber: "308",
-    checkIn: "11-09-2025",
-    checkOut: "14-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Pending",
-    phone: "+1 555-0140",
-    email: "rachel.hall@email.com"
-  },
-  {
-    id: 19,
-    guestName: "Steven Young",
-    roomNumber: "309",
-    checkIn: "12-09-2025",
-    checkOut: "15-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0141",
-    email: "steven.young@email.com"
-  },
-  {
-    id: 20,
-    guestName: "Michelle King",
-    roomNumber: "310",
-    checkIn: "13-09-2025",
-    checkOut: "16-09-2025",
-    keyStatus: "Invalidated",
-    reservationStatus: "Cancelled",
-    phone: "+1 555-0142",
-    email: "michelle.king@email.com"
-  },
-  {
-    id: 21,
-    guestName: "Thomas Wright",
-    roomNumber: "401",
-    checkIn: "14-09-2025",
-    checkOut: "17-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0143",
-    email: "thomas.wright@email.com"
-  },
-  {
-    id: 22,
-    guestName: "Amanda Lopez",
-    roomNumber: "402",
-    checkIn: "15-09-2025",
-    checkOut: "18-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0144",
-    email: "amanda.lopez@email.com"
-  },
-  {
-    id: 23,
-    guestName: "Ryan Hill",
-    roomNumber: "403",
-    checkIn: "16-09-2025",
-    checkOut: "19-09-2025",
-    keyStatus: "Lost",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0145",
-    email: "ryan.hill@email.com"
-  },
-  {
-    id: 24,
-    guestName: "Stephanie Scott",
-    roomNumber: "404",
-    checkIn: "17-09-2025",
-    checkOut: "20-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Pending",
-    phone: "+1 555-0146",
-    email: "stephanie.scott@email.com"
-  },
-  {
-    id: 25,
-    guestName: "Jason Green",
-    roomNumber: "405",
-    checkIn: "18-09-2025",
-    checkOut: "21-09-2025",
-    keyStatus: "Active",
-    reservationStatus: "Confirmed",
-    phone: "+1 555-0147",
-    email: "jason.green@email.com"
-  }
-];
+import { mockReservations, mockRoomsByFloor } from "@/lib/mockData";
 
 
 
@@ -296,6 +18,9 @@ export default function MapPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragStartDate, setDragStartDate] = useState(null);
+  const [isRoomsDragging, setIsRoomsDragging] = useState(false);
+  const [roomsDragStartY, setRoomsDragStartY] = useState(0);
+  const [roomsScrollTop, setRoomsScrollTop] = useState(0);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hotel, setHotel] = useState([]);
@@ -303,6 +28,7 @@ export default function MapPage() {
   const [error, setError] = useState(null);
   const headerRef = useRef(null);
   const calendarRef = useRef(null);
+  const roomsContainerRef = useRef(null);
 
   // Konstante za fluid scroll
   const VISIBLE_DAYS = 21; // 3 nedelje
@@ -473,6 +199,23 @@ export default function MapPage() {
 
   const handleMouseUp = () => {
     setIsDragging(false);
+    setIsRoomsDragging(false);
+  };
+
+  // Rooms drag and scroll handlers
+  const handleRoomsMouseDown = (e) => {
+    setIsRoomsDragging(true);
+    setRoomsDragStartY(e.clientY);
+    setRoomsScrollTop(roomsContainerRef.current?.scrollTop || 0);
+  };
+
+  const handleRoomsMouseMove = (e) => {
+    if (!isRoomsDragging || !roomsContainerRef.current) return;
+    
+    const deltaY = roomsDragStartY - e.clientY;
+    const newScrollTop = roomsScrollTop + deltaY;
+    
+    roomsContainerRef.current.scrollTop = newScrollTop;
   };
 
   // Add global mouse event listeners
@@ -482,8 +225,14 @@ export default function MapPage() {
       document.addEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = 'grabbing';
       document.body.style.userSelect = 'none';
+    } else if (isRoomsDragging) {
+      document.addEventListener('mousemove', handleRoomsMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'grabbing';
+      document.body.style.userSelect = 'none';
     } else {
       document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleRoomsMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
@@ -491,11 +240,12 @@ export default function MapPage() {
 
     return () => {
       document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mousemove', handleRoomsMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = 'default';
       document.body.style.userSelect = 'auto';
     };
-  }, [isDragging, dragStartX, dragStartDate]);
+  }, [isDragging, isRoomsDragging, dragStartX, dragStartDate, roomsDragStartY, roomsScrollTop]);
 
   // Load saved filters on component mount
   useEffect(() => {
@@ -525,58 +275,76 @@ export default function MapPage() {
     }
   }, []);
 
-  // Fetch real rooms data from TOCCATA API
+  // STARI KOD - Fetch real rooms data from TOCCATA API
+  // useEffect(() => {
+  //   const fetchRooms = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch('/api/rooms');
+  //       
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+  //       
+  //       const data = await response.json();
+  //       
+  //       if (data.success) {
+  //         // Group rooms by floor
+  //         const roomsByFloor = {};
+  //         data.rooms.forEach(room => {
+  //           const floorNumber = parseInt(room.floorName.split('.')[0]);
+  //           if (!roomsByFloor[floorNumber]) {
+  //             roomsByFloor[floorNumber] = [];
+  //           }
+  //           
+  //           // Transform TOCCATA data to our format
+  //           const transformedRoom = {
+  //             id: room.roomName,
+  //             status: room.availability === 'ASSIGNED' ? 'occupied' : 'vacant',
+  //             online: room.online,
+  //             cleanliness: room.cleanliness,
+  //             icons: room.online ? ['wifi'] : ['offline']
+  //           };
+  //           
+  //           roomsByFloor[floorNumber].push(transformedRoom);
+  //         });
+  //         
+  //         // Convert to 2D array format
+  //         const floorsArray = Object.keys(roomsByFloor)
+  //           .sort((a, b) => parseInt(a) - parseInt(b))
+  //           .map(floorNumber => roomsByFloor[floorNumber]);
+  //         
+  //         setHotel(floorsArray);
+  //       } else {
+  //         throw new Error(data.error || 'Failed to fetch rooms');
+  //       }
+  //     } catch (err) {
+  //       console.error('Error fetching rooms:', err);
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchRooms();
+  // }, []);
+
+  // NOVI KOD - Use mock data from centralized source
   useEffect(() => {
-    const fetchRooms = async () => {
+    const loadMockRooms = () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/rooms');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // Group rooms by floor
-          const roomsByFloor = {};
-          data.rooms.forEach(room => {
-            const floorNumber = parseInt(room.floorName.split('.')[0]);
-            if (!roomsByFloor[floorNumber]) {
-              roomsByFloor[floorNumber] = [];
-            }
-            
-            // Transform TOCCATA data to our format
-            const transformedRoom = {
-              id: room.roomName,
-              status: room.availability === 'ASSIGNED' ? 'occupied' : 'vacant',
-              online: room.online,
-              cleanliness: room.cleanliness,
-              icons: room.online ? ['wifi'] : ['offline']
-            };
-            
-            roomsByFloor[floorNumber].push(transformedRoom);
-          });
-          
-          // Convert to 2D array format
-          const floorsArray = Object.keys(roomsByFloor)
-            .sort((a, b) => parseInt(a) - parseInt(b))
-            .map(floorNumber => roomsByFloor[floorNumber]);
-          
-          setHotel(floorsArray);
-        } else {
-          throw new Error(data.error || 'Failed to fetch rooms');
-        }
+        // Use mock data directly from lib/mockData.js
+        setHotel(mockRoomsByFloor);
       } catch (err) {
-        console.error('Error fetching rooms:', err);
+        console.error('Error loading mock rooms:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRooms();
+    loadMockRooms();
   }, []);
 
   const toggleFilterDropdown = () => {
@@ -623,7 +391,7 @@ export default function MapPage() {
     setStartDate(newStartDate);
   };
 
-  // Keyboard navigation
+  // Keyboard navigation for horizontal and vertical scroll
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Proveri da li je fokus na stranici (ne na input poljima)
@@ -631,6 +399,7 @@ export default function MapPage() {
         return;
       }
 
+      // Horizontal scroll (datumi)
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         const newStartDate = new Date(startDate);
@@ -641,6 +410,35 @@ export default function MapPage() {
         const newStartDate = new Date(startDate);
         newStartDate.setDate(startDate.getDate() + 1);
         setStartDate(newStartDate);
+      }
+      
+      // Vertical scroll (sobe)
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (roomsContainerRef.current) {
+          const currentScroll = roomsContainerRef.current.scrollTop;
+          roomsContainerRef.current.scrollTop = Math.max(0, currentScroll - 50);
+        }
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (roomsContainerRef.current) {
+          const currentScroll = roomsContainerRef.current.scrollTop;
+          const maxScroll = roomsContainerRef.current.scrollHeight - roomsContainerRef.current.clientHeight;
+          roomsContainerRef.current.scrollTop = Math.min(maxScroll, currentScroll + 50);
+        }
+      } else if (e.key === 'PageUp') {
+        e.preventDefault();
+        if (roomsContainerRef.current) {
+          const currentScroll = roomsContainerRef.current.scrollTop;
+          roomsContainerRef.current.scrollTop = Math.max(0, currentScroll - 300);
+        }
+      } else if (e.key === 'PageDown') {
+        e.preventDefault();
+        if (roomsContainerRef.current) {
+          const currentScroll = roomsContainerRef.current.scrollTop;
+          const maxScroll = roomsContainerRef.current.scrollHeight - roomsContainerRef.current.clientHeight;
+          roomsContainerRef.current.scrollTop = Math.min(maxScroll, currentScroll + 300);
+        }
       }
     };
 
@@ -707,6 +505,21 @@ export default function MapPage() {
     const monthKey = year * 12 + month; // Jedinstveni ključ za mesec
     
     return monthKey % 2 === 0 ? 'bg-yellow-100' : 'bg-orange-100';
+  };
+
+  // Funkcija za proveru da li postoji rezervacija za sobu/dan
+  const hasReservation = (roomId, date) => {
+    return mockReservations.some(reservation => {
+      // Proveri da li je soba ista
+      if (reservation.roomNumber !== roomId) return false;
+      
+      // Konvertuj datume u Date objekte za poređenje
+      const checkIn = new Date(reservation.checkIn.split('-').reverse().join('-'));
+      const checkOut = new Date(reservation.checkOut.split('-').reverse().join('-'));
+      
+      // Proveri da li je datum u periodu rezervacije (uključujući check-in, ali ne check-out)
+      return date >= checkIn && date < checkOut;
+    });
   };
 
   return (
@@ -820,9 +633,9 @@ export default function MapPage() {
               >
                 {/* Red 1: Godina + Mesec */}
                 <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
-                  {/* Fiksirano polje za broj sobe */}
-                  <div className="px-4 py-1 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
-                    Room
+                  {/* Fiksirano polje za mesec */}
+                  <div className="px-4 py-1 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center">
+                    Month
                   </div>
                   
                   {/* Godina + Mesec - fluid scroll */}
@@ -871,9 +684,12 @@ export default function MapPage() {
                 
                 {/* Red 2: Nedelje */}
                 <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
-                  {/* Fiksirano polje za broj sobe */}
-                  <div className="px-4 py-1 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
-                    Room
+                  {/* Fiksirano polje za nedelju */}
+                  <div 
+                    className={`px-4 py-1 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    onMouseDown={handleRoomsMouseDown}
+                  >
+                    Week
                   </div>
                   
                   {/* Nedelje - fluid scroll */}
@@ -932,9 +748,12 @@ export default function MapPage() {
                 
                 {/* Red 3: Dani */}
                 <div className="grid gap-0" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
-                  {/* Fiksirano polje za broj sobe */}
-                  <div className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 border-r border-gray-200">
-                    Room
+                  {/* Fiksirano polje za sobu/dan */}
+                  <div 
+                    className={`px-4 py-2 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    onMouseDown={handleRoomsMouseDown}
+                  >
+                    Room / Day
                   </div>
                   
                   {/* Datumi */}
@@ -966,7 +785,11 @@ export default function MapPage() {
               </div>
               
               {/* Scroll-abilno telo tabele sa sobama */}
-              <div className="max-h-96 overflow-y-auto">
+              <div 
+                ref={roomsContainerRef}
+                className={`max-h-96 overflow-y-auto ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                onMouseDown={handleRoomsMouseDown}
+              >
                 {loading && (
                   <div className="text-center py-8">
                     <div className="text-lg font-semibold text-gray-600">Učitavanje soba...</div>
@@ -989,19 +812,33 @@ export default function MapPage() {
                         style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}
                       >
                         {/* Fiksirani broj sobe */}
-                        <div className="px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-200 sticky left-0 z-5">
+                        <div 
+                          className={`px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-200 sticky left-0 z-5 ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                          onMouseDown={handleRoomsMouseDown}
+                        >
                           {room.id}
                         </div>
                         
-                        {/* Polja za datume (placeholder za sada) */}
-                        {Array.from({ length: VISIBLE_DAYS }, (_, index) => (
-                          <div
-                            key={index}
-                            className="px-1 py-3 text-center text-xs text-gray-500 border-r border-gray-100"
-                          >
-                            {/* Ovde će biti rezervacije */}
-                          </div>
-                        ))}
+                        {/* Polja za datume sa rezervacijama */}
+                        {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
+                          const currentDate = new Date(startDate);
+                          currentDate.setDate(startDate.getDate() + index);
+                          
+                          const isReserved = hasReservation(room.id, currentDate);
+                          
+                          return (
+                            <div
+                              key={index}
+                              className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${
+                                isReserved 
+                                  ? 'bg-blue-100' 
+                                  : 'text-gray-500'
+                              }`}
+                            >
+                              {/* Polje je prazno, samo obeleženo ako postoji rezervacija */}
+                            </div>
+                          );
+                        })}
                       </div>
                     ))}
                   </div>

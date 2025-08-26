@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import RoomCardMini from "@/components/RoomCardMini";
 import Subnav from "@/components/RoomsSubnav";
 import RoomsFilter from "@/components/RoomsFilter";
+import { mockRoomsByFloor } from "@/lib/mockData";
 
 const roomsItems = [
   { label: "All rooms", href: "/rooms" },
@@ -24,40 +25,57 @@ export default function OccupiedRoomsPage() {
   const router = useRouter();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [currentFilter, setCurrentFilter] = useState(null);
-  
-  const floors = 10;
-  const roomsPerFloor = 20;
 
-  // Generišemo sve sobe sa više atributa za filtriranje
-  const allRooms = useMemo(() => Array.from({ length: floors }, (_, floorIndex) =>
-    Array.from({ length: roomsPerFloor }, (_, roomIndex) => {
-      const roomNumber = (floorIndex + 1) * 100 + roomIndex + 1;
-      const statusOptions = ["occupied", "vacant", "alarm", "to-be-cleaned", "out-of-order"];
-      const iconsOptions = ["alarm", "light", "dnd", "wifi"];
-      
-      // Dodajemo atribute za filtriranje
-      const isOnline = Math.random() > 0.1; // 90% šanse da je online
-      const isClean = Math.random() > 0.3; // 70% šanse da je čista
-      
-      // Region atributi (A, B, C) - svaka soba pripada jednom regionu
-      const regions = ["a-region", "b-region", "c-region"];
-      const region = regions[Math.floor(Math.random() * regions.length)];
-      
-      return {
-        id: roomNumber,
-        floor: floorIndex + 1,
-        status: statusOptions[Math.floor(Math.random() * statusOptions.length)],
-        icons: [
-          iconsOptions[Math.floor(Math.random() * iconsOptions.length)],
-        ],
-        attributes: {
-          online: isOnline,
-          clean: isClean,
-          region: region
-        }
-      };
-    })
-  ).flat(), []);
+  // STARI KOD - Generišemo sve sobe sa više atributa za filtriranje
+  // const floors = 10;
+  // const roomsPerFloor = 20;
+  // const allRooms = useMemo(() => Array.from({ length: floors }, (_, floorIndex) =>
+  //   Array.from({ length: roomsPerFloor }, (_, roomIndex) => {
+  //     const roomNumber = (floorIndex + 1) * 100 + roomIndex + 1;
+  //     const statusOptions = ["occupied", "vacant", "alarm", "to-be-cleaned", "out-of-order"];
+  //     const iconsOptions = ["alarm", "light", "dnd", "wifi"];
+  //     
+  //     // Dodajemo atribute za filtriranje
+  //     const isOnline = Math.random() > 0.1; // 90% šanse da je online
+  //     const isClean = Math.random() > 0.3; // 70% šanse da je čista
+  //     
+  //     // Region atributi (A, B, C) - svaka soba pripada jednom regionu
+  //     const regions = ["a-region", "b-region", "c-region"];
+  //     const region = regions[Math.floor(Math.random() * regions.length)];
+  //     
+  //     return {
+  //       id: roomNumber,
+  //       floor: floorIndex + 1,
+  //       status: statusOptions[Math.floor(Math.random() * statusOptions.length)],
+  //       icons: [
+  //         iconsOptions[Math.floor(Math.random() * iconsOptions.length)],
+  //       ],
+  //       attributes: {
+  //         online: isOnline,
+  //         clean: isClean,
+  //         region: region
+  //       }
+  //     };
+  //   })
+  // ).flat(), []);
+
+  // NOVI KOD - Use mock data from centralized source
+  const allRooms = useMemo(() => {
+    // Flatten mockRoomsByFloor into a single array
+    return mockRoomsByFloor.flat().map(room => ({
+      id: room.id,
+      floor: parseInt(room.id.charAt(0)), // Extract floor from room ID (e.g., "101" -> 1)
+      status: room.status,
+      icons: room.icons,
+      attributes: {
+        online: room.online,
+        clean: room.cleanliness === 'clean',
+        region: room.id.charAt(0) === '1' ? 'a-region' : 
+                room.id.charAt(0) === '2' ? 'b-region' : 
+                room.id.charAt(0) === '3' ? 'c-region' : 'a-region'
+      }
+    }));
+  }, []);
 
   // Funkcija za parsiranje teksta u brojeve (floors, rooms)
   const parseTextToNumbers = (text) => {

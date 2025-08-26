@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Subnav from "@/components/RoomsSubnav";
+import { mockRoomDetails } from "@/lib/mockData";
 
 const roomsItems = [
   { label: "All rooms", href: "/rooms" },
@@ -45,43 +46,76 @@ export default function RoomTypeOnePage() {
     }
   };
 
-      // Fetch room data when roomId changes
-  const fetchRoomData = async (id) => {
+      // STARI KOD - Fetch room data when roomId changes
+  // const fetchRoomData = async (id) => {
+  //   try {
+  //     console.log('Starting to fetch room data for:', id);
+  //     setLoading(true);
+  //     setError(null);
+  //     
+  //     // Koristimo novi efikasni API endpoint
+  //     const apiUrl = `/api/room-efficient/${id}`;
+  //     console.log('Calling efficient API:', apiUrl);
+  //     
+  //     const response = await fetch(apiUrl);
+  //     console.log('Response status:', response.status);
+  //     
+  //     if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //     }
+  //     
+  //     const data = await response.json();
+  //     console.log('Response data:', data);
+  //     
+  //     if (data.success) {
+  //         console.log('Setting room data:', data.room);
+  //         console.log('Room statuses:', data.room.statuses);
+  //         
+  //         setRoomData(data.room);
+  //         setApiStats({
+  //           apiCalls: data.apiCalls,
+  //           responseTime: data.responseTime
+  //         });
+  //         setLoading(false);
+  //         console.log('Data set successfully, loading set to false');
+  //     } else {
+  //         throw new Error(data.error || 'Failed to fetch room data');
+  //     }
+  //   } catch (err) {
+  //     console.error('Error fetching room data:', err);
+  //     setError(err.message);
+  //     setRoomData(null);
+  //     setApiStats(null);
+  //     setLoading(false);
+  //   }
+  // };
+
+  // NOVI KOD - Load room data from mock data
+  const loadRoomData = (id) => {
     try {
-      console.log('Starting to fetch room data for:', id);
+      console.log('Loading mock room data for:', id);
       setLoading(true);
       setError(null);
       
-      // Koristimo novi efikasni API endpoint
-      const apiUrl = `/api/room-efficient/${id}`;
-      console.log('Calling efficient API:', apiUrl);
+      // Get room data from mock data
+      const roomData = mockRoomDetails[id];
       
-      const response = await fetch(apiUrl);
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Response data:', data);
-      
-      if (data.success) {
-        console.log('Setting room data:', data.room);
-        console.log('Room statuses:', data.room.statuses);
+      if (roomData) {
+        console.log('Setting mock room data:', roomData);
+        console.log('Room statuses:', roomData.statuses);
         
-        setRoomData(data.room);
+        setRoomData(roomData);
         setApiStats({
-          apiCalls: data.apiCalls,
-          responseTime: data.responseTime
+          apiCalls: 0,
+          responseTime: 0
         });
         setLoading(false);
-        console.log('Data set successfully, loading set to false');
+        console.log('Mock data set successfully, loading set to false');
       } else {
-        throw new Error(data.error || 'Failed to fetch room data');
+        throw new Error(`Room ${id} not found in mock data`);
       }
     } catch (err) {
-      console.error('Error fetching room data:', err);
+      console.error('Error loading mock room data:', err);
       setError(err.message);
       setRoomData(null);
       setApiStats(null);
@@ -93,8 +127,8 @@ export default function RoomTypeOnePage() {
     console.log('=== ROOMTYPEONE useEffect ===');
     console.log('roomId changed to:', roomId);
     
-    // Fetch room data immediately when roomId changes
-    fetchRoomData(roomId);
+    // Load room data immediately when roomId changes
+    loadRoomData(roomId);
   }, [roomId]);
 
   // Transform room data to status format

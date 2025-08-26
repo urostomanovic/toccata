@@ -3,54 +3,58 @@ import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import { MagnifyingGlassIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { mockStaffData } from "@/lib/mockData";
 
 export default function StaffPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedStaff, setSelectedStaff] = useState(null);
 
-  // Test podaci za osoblje - slično kao na slici
-  const staffData = [
-    {
-      id: 1,
-      name: "Garnier",
-      lastname: "Yves",
-      function: "Maid",
-      email: "yves.garnier@hotel.com",
-      phone: "06 12 34 56 78"
-    },
-    {
-      id: 2,
-      name: "Yves",
-      lastname: "Garnier", 
-      function: "Maid",
-      email: "yves.garnier2@hotel.com",
-      phone: "06 98 76 54 32"
-    },
-    {
-      id: 3,
-      name: "John",
-      lastname: "Smith",
-      function: "Administrator",
-      email: "john.smith@hotel.com",
-      phone: "06 11 22 33 44"
-    },
-    {
-      id: 4,
-      name: "Maria",
-      lastname: "Garcia",
-      function: "Receptionist",
-      email: "maria.garcia@hotel.com",
-      phone: "06 55 66 77 88"
-    },
-    {
-      id: 5,
-      name: "David",
-      lastname: "Johnson",
-      function: "Maintenance",
-      email: "david.johnson@hotel.com",
-      phone: "06 99 88 77 66"
-    }
-  ];
+  // STARI KOD - Test podaci za osoblje - slično kao na slici
+  // const staffData = [
+  //   {
+  //     id: 1,
+  //     name: "Garnier",
+  //     lastname: "Yves",
+  //     function: "Maid",
+  //     email: "yves.garnier@hotel.com",
+  //     phone: "06 12 34 56 78"
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Yves",
+  //     lastname: "Garnier", 
+  //     function: "Maid",
+  //     email: "yves.garnier2@hotel.com",
+  //     phone: "06 98 76 54 32"
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "John",
+  //     lastname: "Smith",
+  //     function: "Administrator",
+  //     email: "john.smith@hotel.com",
+  //     phone: "06 11 22 33 44"
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Maria",
+  //     lastname: "Garcia",
+  //     function: "Receptionist",
+  //     email: "maria.garcia@hotel.com",
+  //     phone: "06 55 66 77 88"
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "David",
+  //     lastname: "Johnson",
+  //     function: "Maintenance",
+  //     email: "david.johnson@hotel.com",
+  //     phone: "06 99 88 77 66"
+  //   }
+  // ];
+
+  // NOVI KOD - Use mock data from centralized source
+  const staffData = mockStaffData;
 
   // Filtriranje osoblja na osnovu pretrage
   const filteredStaff = staffData.filter(staff =>

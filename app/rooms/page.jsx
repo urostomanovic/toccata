@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
 import Subnav from "@/components/RoomsSubnav";
+import { mockRoomsByFloor } from "@/lib/mockData";
 
 const roomsItems = [
   { label: "All rooms", href: "/rooms" },
@@ -25,58 +26,76 @@ export default function RoomsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch real rooms data from TOCCATA API
+  // STARI KOD - Fetch real rooms data from TOCCATA API
+  // useEffect(() => {
+  //   const fetchRooms = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch('/api/rooms');
+  //       
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! status: ${response.status}`);
+  //       }
+  //       
+  //       const data = await response.json();
+  //       
+  //       if (data.success) {
+  //         // Group rooms by floor
+  //         const roomsByFloor = {};
+  //         data.rooms.forEach(room => {
+  //           const floorNumber = parseInt(room.floorName.split('.')[0]);
+  //           if (!roomsByFloor[floorNumber]) {
+  //             roomsByFloor[floorNumber] = [];
+  //           }
+  //           
+  //           // Transform TOCCATA data to our format
+  //           const transformedRoom = {
+  //             id: room.roomName,
+  //             status: room.availability === 'ASSIGNED' ? 'occupied' : 'vacant',
+  //             online: room.online,
+  //             cleanliness: room.cleanliness,
+  //             icons: room.online ? ['wifi'] : ['offline']
+  //           };
+  //           
+  //           roomsByFloor[floorNumber].push(transformedRoom);
+  //         });
+  //         
+  //         // Convert to 2D array format
+  //         const floorsArray = Object.keys(roomsByFloor)
+  //           .sort((a, b) => parseInt(a) - parseInt(b))
+  //           .map(floorNumber => roomsByFloor[floorNumber]);
+  //         
+  //         setHotel(floorsArray);
+  //       } else {
+  //         throw new Error(data.error || 'Failed to fetch rooms');
+  //       }
+  //     } catch (err) {
+  //       console.error('Error fetching rooms:', err);
+  //       setError(err.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchRooms();
+  // }, []);
+
+  // NOVI KOD - Use mock data from centralized source
   useEffect(() => {
-    const fetchRooms = async () => {
+    const loadMockRooms = () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/rooms');
-        
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        if (data.success) {
-          // Group rooms by floor
-          const roomsByFloor = {};
-          data.rooms.forEach(room => {
-            const floorNumber = parseInt(room.floorName.split('.')[0]);
-            if (!roomsByFloor[floorNumber]) {
-              roomsByFloor[floorNumber] = [];
-            }
-            
-            // Transform TOCCATA data to our format
-            const transformedRoom = {
-              id: room.roomName,
-              status: room.availability === 'ASSIGNED' ? 'occupied' : 'vacant',
-              online: room.online,
-              cleanliness: room.cleanliness,
-              icons: room.online ? ['wifi'] : ['offline']
-            };
-            
-            roomsByFloor[floorNumber].push(transformedRoom);
-          });
-          
-          // Convert to 2D array format
-          const floorsArray = Object.keys(roomsByFloor)
-            .sort((a, b) => parseInt(a) - parseInt(b))
-            .map(floorNumber => roomsByFloor[floorNumber]);
-          
-          setHotel(floorsArray);
-        } else {
-          throw new Error(data.error || 'Failed to fetch rooms');
-        }
+        // Use mock data directly from lib/mockData.js
+        setHotel(mockRoomsByFloor);
       } catch (err) {
-        console.error('Error fetching rooms:', err);
+        console.error('Error loading mock rooms:', err);
         setError(err.message);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRooms();
+    loadMockRooms();
   }, []);
 
   const handleRoomClick = (roomId) => {
