@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
-import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 
 // Mock podaci za rezervacije
 const mockReservations = [
@@ -52,7 +52,10 @@ export default function MapPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragStartDate, setDragStartDate] = useState(null);
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const headerRef = useRef(null);
+  const calendarRef = useRef(null);
 
   // Konstante za fluid scroll
   const VISIBLE_DAYS = 21; // 3 nedelje
@@ -293,6 +296,76 @@ export default function MapPage() {
     }
   };
 
+  const handleCalendarToggle = () => {
+    if (!isCalendarOpen) {
+      // Kada se otvara kalendar, postavi selectedDate na trenutni startDate
+      setSelectedDate(new Date(startDate));
+    }
+    setIsCalendarOpen(!isCalendarOpen);
+  };
+
+  const handleDateSelect = (date) => {
+    setSelectedDate(date);
+    setStartDate(date);
+    setIsCalendarOpen(false);
+  };
+
+  const handleMoveLeft = () => {
+    const newStartDate = new Date(startDate);
+    newStartDate.setDate(startDate.getDate() - 1);
+    setStartDate(newStartDate);
+  };
+
+  const handleMoveRight = () => {
+    const newStartDate = new Date(startDate);
+    newStartDate.setDate(startDate.getDate() + 1);
+    setStartDate(newStartDate);
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Proveri da li je fokus na stranici (ne na input poljima)
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const newStartDate = new Date(startDate);
+        newStartDate.setDate(startDate.getDate() - 1);
+        setStartDate(newStartDate);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        const newStartDate = new Date(startDate);
+        newStartDate.setDate(startDate.getDate() + 1);
+        setStartDate(newStartDate);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [startDate]);
+
+  // Close calendar when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setIsCalendarOpen(false);
+      }
+    };
+
+    if (isCalendarOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isCalendarOpen]);
+
   const handleApplyFilter = (filterData, updateCurrentFilter = true, filterName = null) => {
     // Ažuriraj currentFilter sa novim podacima
     if (currentFilter && updateCurrentFilter) {
@@ -385,6 +458,42 @@ export default function MapPage() {
                   </div>
                 )}
               </div>
+
+              {/* Calendar Icon */}
+              <div className="relative" ref={calendarRef}>
+                <button
+                  onClick={handleCalendarToggle}
+                  className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <CalendarIcon className="h-5 w-5 text-gray-500" />
+                </button>
+                
+                {/* Calendar Dropdown */}
+                {isCalendarOpen && (
+                  <div className="absolute top-full left-0 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-50 p-4">
+                    <CalendarPicker 
+                      selectedDate={selectedDate}
+                      onDateSelect={handleDateSelect}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* Navigation Arrows */}
+              <div className="flex gap-1">
+                <button
+                  onClick={handleMoveLeft}
+                  className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <ChevronLeftIcon className="h-5 w-5 text-gray-500" />
+                </button>
+                <button
+                  onClick={handleMoveRight}
+                  className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
             </div>
             
             {/* Edit Filter Button */}
@@ -441,7 +550,9 @@ export default function MapPage() {
                    return (
                      <div
                        key={index}
-                       className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getMonthColor(currentDate)}`}
+                       className={`px-2 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getMonthColor(currentDate)} ${
+                         isFirstDayOfMonth ? 'border-l-2 border-l-blue-300' : ''
+                       }`}
                        style={{ 
                          gridColumn: `${index + 2} / span ${daysInMonth}`
                        }}
@@ -577,3 +688,113 @@ export default function MapPage() {
   );
 }
 
+// Calendar Picker Component
+function CalendarPicker({ selectedDate, onDateSelect }) {
+  const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
+
+  const getDaysInMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+  };
+
+  const getFirstDayOfMonth = (date) => {
+    return new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+  };
+
+  const handlePrevMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
+  };
+
+  const handleDateClick = (day) => {
+    const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    onDateSelect(newDate);
+  };
+
+  const isSelectedDate = (day) => {
+    return selectedDate.getDate() === day && 
+           selectedDate.getMonth() === currentMonth.getMonth() && 
+           selectedDate.getFullYear() === currentMonth.getFullYear();
+  };
+
+  const isToday = (day) => {
+    const today = new Date();
+    return today.getDate() === day && 
+           today.getMonth() === currentMonth.getMonth() && 
+           today.getFullYear() === currentMonth.getFullYear();
+  };
+
+  const renderCalendar = () => {
+    const daysInMonth = getDaysInMonth(currentMonth);
+    const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
+    const days = [];
+
+    // Add empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayOfMonth; i++) {
+      days.push(<div key={`empty-${i}`} className="p-2"></div>);
+    }
+
+    // Add days of the month
+    for (let day = 1; day <= daysInMonth; day++) {
+      const isSelected = isSelectedDate(day);
+      const isTodayDate = isToday(day);
+      
+      days.push(
+        <button
+          key={day}
+          onClick={() => handleDateClick(day)}
+          className={`p-2 text-sm rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            isSelected 
+              ? 'bg-blue-600 text-white' 
+              : isTodayDate 
+                ? 'bg-blue-100 text-blue-800 font-semibold' 
+                : 'text-gray-700'
+          }`}
+        >
+          {day}
+        </button>
+      );
+    }
+
+    return days;
+  };
+
+  return (
+    <div className="w-64">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          onClick={handlePrevMonth}
+          className="p-1 hover:bg-gray-100 rounded"
+        >
+          <ChevronDownIcon className="h-4 w-4 transform rotate-90" />
+        </button>
+        <h3 className="text-sm font-semibold text-gray-700">
+          {currentMonth.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+        </h3>
+        <button
+          onClick={handleNextMonth}
+          className="p-1 hover:bg-gray-100 rounded"
+        >
+          <ChevronDownIcon className="h-4 w-4 transform -rotate-90" />
+        </button>
+      </div>
+
+      {/* Day names */}
+      <div className="grid grid-cols-7 gap-1 mb-2">
+        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+          <div key={day} className="p-2 text-xs font-medium text-gray-500 text-center">
+            {day}
+          </div>
+        ))}
+      </div>
+
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-1">
+        {renderCalendar()}
+      </div>
+    </div>
+  );
+}
