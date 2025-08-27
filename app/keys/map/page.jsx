@@ -391,25 +391,15 @@ export default function MapPage() {
     loadMockRooms();
   }, []);
 
-  // Log za ulazak na MAP stranicu
+  // Sačuvaj startRoom i startDate poziciju pri izlasku
   useEffect(() => {
-    const roomNumber = hotel[startRoom] || 'N/A';
-    const dateString = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-    console.log('MAP Enter', `${roomNumber} / ${dateString}`);
-    
-    // Log za izlazak sa MAP stranice
     return () => {
-      const roomNumber = hotel[startRoom] || 'N/A';
-      const dateString = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      console.log('MAP Exit', `${roomNumber} / ${dateString}`);
-      
-      // Sačuvaj startRoom i startDate poziciju pri izlasku
       if (typeof window !== 'undefined') {
         localStorage.setItem('toccata-map-startroom', startRoom.toString());
         localStorage.setItem('toccata-map-startdate', startDate.toISOString());
       }
     };
-  }, [startRoom, startDate, hotel]);
+  }, [startRoom, startDate]);
 
   const toggleFilterDropdown = () => {
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
