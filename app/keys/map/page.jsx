@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
 import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
-import { mockReservations, mockRoomsByFloor } from "@/lib/mockData";
+import { mockReservations, mockRooms } from "@/lib/mockData";
 
 
 
@@ -24,6 +24,7 @@ export default function MapPage() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hotel, setHotel] = useState([]);
+  const [startRoom, setStartRoom] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const headerRef = useRef(null);
@@ -32,6 +33,7 @@ export default function MapPage() {
 
   // Konstante za fluid scroll
   const VISIBLE_DAYS = 21; // 3 nedelje
+  const VISIBLE_ROOMS = 15; // broj soba koji se prikazuje
   const DAY_WIDTH = 50; // px po danu
 
   // Funkcija za računanje broja nedelje u godini
@@ -213,9 +215,23 @@ export default function MapPage() {
     if (!isRoomsDragging || !roomsContainerRef.current) return;
     
     const deltaY = roomsDragStartY - e.clientY;
-    const newScrollTop = roomsScrollTop + deltaY;
     
-    roomsContainerRef.current.scrollTop = newScrollTop;
+    // Pomeranje na dole (deltaY < 0) - proveri da li može da se pomeri unazad
+    if (deltaY < 0 && startRoom > 0) {
+      const newStartRoom = Math.max(0, startRoom - 1);
+      setStartRoom(newStartRoom);
+      setRoomsDragStartY(e.clientY);
+      // Resetuj scroll poziciju
+      roomsContainerRef.current.scrollTop = 0;
+    }
+    // Pomeranje na gore (deltaY > 0) - proveri da li može da se pomeri unapred
+    else if (deltaY > 0 && startRoom < hotel.length - VISIBLE_ROOMS) {
+      const newStartRoom = Math.min(hotel.length - VISIBLE_ROOMS, startRoom + 1);
+      setStartRoom(newStartRoom);
+      setRoomsDragStartY(e.clientY);
+      // Resetuj scroll poziciju
+      roomsContainerRef.current.scrollTop = 0;
+    }
   };
 
   // Add global mouse event listeners
@@ -335,7 +351,7 @@ export default function MapPage() {
       try {
         setLoading(true);
         // Use mock data directly from lib/mockData.js
-        setHotel(mockRoomsByFloor);
+        setHotel(mockRooms);
       } catch (err) {
         console.error('Error loading mock rooms:', err);
         setError(err.message);
@@ -391,6 +407,16 @@ export default function MapPage() {
     setStartDate(newStartDate);
   };
 
+  // Funkcije za pomeranje kroz sobe (analogno datuma)
+  const handleRoomsMoveLeft = () => {
+    setStartRoom(Math.max(0, startRoom - 1));
+  };
+
+  const handleRoomsMoveRight = () => {
+    const maxStartRoom = Math.max(0, hotel.length - VISIBLE_ROOMS);
+    setStartRoom(Math.min(maxStartRoom, startRoom + 1));
+  };
+
   // Keyboard navigation for horizontal and vertical scroll
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -412,33 +438,22 @@ export default function MapPage() {
         setStartDate(newStartDate);
       }
       
-      // Vertical scroll (sobe)
+      // Vertical scroll (sobe) - sada koristi istu logiku kao datumi
       if (e.key === 'ArrowUp') {
         e.preventDefault();
-        if (roomsContainerRef.current) {
-          const currentScroll = roomsContainerRef.current.scrollTop;
-          roomsContainerRef.current.scrollTop = Math.max(0, currentScroll - 50);
-        }
+        handleRoomsMoveLeft();
       } else if (e.key === 'ArrowDown') {
         e.preventDefault();
-        if (roomsContainerRef.current) {
-          const currentScroll = roomsContainerRef.current.scrollTop;
-          const maxScroll = roomsContainerRef.current.scrollHeight - roomsContainerRef.current.clientHeight;
-          roomsContainerRef.current.scrollTop = Math.min(maxScroll, currentScroll + 50);
-        }
+        handleRoomsMoveRight();
       } else if (e.key === 'PageUp') {
         e.preventDefault();
-        if (roomsContainerRef.current) {
-          const currentScroll = roomsContainerRef.current.scrollTop;
-          roomsContainerRef.current.scrollTop = Math.max(0, currentScroll - 300);
-        }
+        // Pomeri se za 3 sobe unazad (smanjeno za kompaktnije polja)
+        setStartRoom(Math.max(0, startRoom - 3));
       } else if (e.key === 'PageDown') {
         e.preventDefault();
-        if (roomsContainerRef.current) {
-          const currentScroll = roomsContainerRef.current.scrollTop;
-          const maxScroll = roomsContainerRef.current.scrollHeight - roomsContainerRef.current.clientHeight;
-          roomsContainerRef.current.scrollTop = Math.min(maxScroll, currentScroll + 300);
-        }
+        // Pomeri se za 3 sobe unapred (smanjeno za kompaktnije polja)
+        const maxStartRoom = Math.max(0, hotel.length - VISIBLE_ROOMS);
+        setStartRoom(Math.min(maxStartRoom, startRoom + 3));
       }
     };
 
@@ -446,7 +461,7 @@ export default function MapPage() {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [startDate]);
+  }, [startDate, startRoom, hotel.length]);
 
   // Close calendar when clicking outside
   useEffect(() => {
@@ -593,7 +608,7 @@ export default function MapPage() {
                 )}
               </div>
 
-              {/* Navigation Arrows */}
+              {/* Navigation Arrows - Datumi */}
               <div className="flex gap-1">
                 <button
                   onClick={handleMoveLeft}
@@ -606,6 +621,28 @@ export default function MapPage() {
                   className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                   <ChevronRightIcon className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+
+              {/* Navigation Arrows - Sobe (Gore/Dole) */}
+              <div className="flex gap-1">
+                <button
+                  onClick={handleRoomsMoveLeft}
+                  className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={startRoom === 0}
+                >
+                  <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                  </svg>
+                </button>
+                <button
+                  onClick={handleRoomsMoveRight}
+                  className="flex items-center justify-center px-4 py-2 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={startRoom >= Math.max(0, hotel.length - VISIBLE_ROOMS)}
+                >
+                  <svg className="h-5 w-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
               </div>
             </div>
@@ -803,46 +840,49 @@ export default function MapPage() {
                   </div>
                 )}
                 
-                {!loading && !error && hotel.map((floor, floorIndex) => (
-                  <div key={floorIndex}>
-                    {floor.map((room) => (
+                {!loading && !error && Array.from({ length: VISIBLE_ROOMS }, (_, roomIndex) => {
+                  const actualRoomIndex = startRoom + roomIndex;
+                  const roomNumber = hotel[actualRoomIndex];
+                  
+                  if (!roomNumber) return null; // Ako nema više soba, ne renderuj ništa
+                  
+                  return (
+                    <div 
+                      key={actualRoomIndex} 
+                      className="grid gap-0 border-b border-gray-200"
+                      style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}
+                    >
+                      {/* Fiksirani broj sobe */}
                       <div 
-                        key={room.id} 
-                        className="grid gap-0 border-b border-gray-200"
-                        style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}
+                        className={`px-4 py-1 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-200 sticky left-0 z-5 ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        onMouseDown={handleRoomsMouseDown}
                       >
-                        {/* Fiksirani broj sobe */}
-                        <div 
-                          className={`px-4 py-3 text-sm font-medium text-gray-700 bg-gray-50 border-r border-gray-200 sticky left-0 z-5 ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                          onMouseDown={handleRoomsMouseDown}
-                        >
-                          {room.id}
-                        </div>
-                        
-                        {/* Polja za datume sa rezervacijama */}
-                        {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
-                          const currentDate = new Date(startDate);
-                          currentDate.setDate(startDate.getDate() + index);
-                          
-                          const isReserved = hasReservation(room.id, currentDate);
-                          
-                          return (
-                            <div
-                              key={index}
-                              className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${
-                                isReserved 
-                                  ? 'bg-blue-100' 
-                                  : 'text-gray-500'
-                              }`}
-                            >
-                              {/* Polje je prazno, samo obeleženo ako postoji rezervacija */}
-                            </div>
-                          );
-                        })}
+                        {roomNumber}
                       </div>
-                    ))}
-                  </div>
-                ))}
+                      
+                      {/* Polja za datume sa rezervacijama */}
+                      {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
+                        const currentDate = new Date(startDate);
+                        currentDate.setDate(startDate.getDate() + index);
+                        
+                        const isReserved = hasReservation(roomNumber, currentDate);
+                        
+                        return (
+                          <div
+                            key={index}
+                            className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${
+                              isReserved 
+                                ? 'bg-blue-100' 
+                                : 'text-gray-500'
+                            }`}
+                          >
+                            {/* Polje je prazno, samo obeleženo ako postoji rezervacija */}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
