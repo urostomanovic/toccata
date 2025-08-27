@@ -14,7 +14,21 @@ export default function MapPage() {
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const [currentFilter, setCurrentFilter] = useState(null);
   const [savedFilters, setSavedFilters] = useState([]);
-  const [startDate, setStartDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(() => {
+    // Pokušaj da učitaj sačuvanu startDate poziciju
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('toccata-map-startdate');
+      if (saved) {
+        try {
+          return new Date(saved);
+        } catch (error) {
+          console.error('Error parsing saved startDate:', error);
+        }
+      }
+    }
+    // Default pozicija - današnji datum
+    return new Date();
+  });
   const [isDragging, setIsDragging] = useState(false);
   const [dragStartX, setDragStartX] = useState(0);
   const [dragStartDate, setDragStartDate] = useState(null);
@@ -24,7 +38,21 @@ export default function MapPage() {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hotel, setHotel] = useState([]);
-  const [startRoom, setStartRoom] = useState(0);
+  const [startRoom, setStartRoom] = useState(() => {
+    // Pokušaj da učitaj sačuvanu startRoom poziciju
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('toccata-map-startroom');
+      if (saved) {
+        try {
+          return parseInt(saved);
+        } catch (error) {
+          console.error('Error parsing saved startRoom:', error);
+        }
+      }
+    }
+    // Default pozicija - prva soba
+    return 0;
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const headerRef = useRef(null);
@@ -362,6 +390,26 @@ export default function MapPage() {
 
     loadMockRooms();
   }, []);
+
+  // Log za ulazak na MAP stranicu
+  useEffect(() => {
+    const roomNumber = hotel[startRoom] || 'N/A';
+    const dateString = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    console.log('MAP Enter', `${roomNumber} / ${dateString}`);
+    
+    // Log za izlazak sa MAP stranice
+    return () => {
+      const roomNumber = hotel[startRoom] || 'N/A';
+      const dateString = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      console.log('MAP Exit', `${roomNumber} / ${dateString}`);
+      
+      // Sačuvaj startRoom i startDate poziciju pri izlasku
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('toccata-map-startroom', startRoom.toString());
+        localStorage.setItem('toccata-map-startdate', startDate.toISOString());
+      }
+    };
+  }, [startRoom, startDate, hotel]);
 
   const toggleFilterDropdown = () => {
     setIsFilterDropdownOpen(!isFilterDropdownOpen);
