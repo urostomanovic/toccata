@@ -502,8 +502,14 @@ export default function MapPage() {
   };
 
   // NOVA FUNKCIJA - Vraća status: "free", "reserved", "checkin", "checkout", "both"
-  const getReservationStatus = (roomId, date) => {
-    const roomReservations = mockReservations.filter(res => res.roomNumber === roomId.toString());
+  const getReservationStatus = (roomId, date, excludeReservationId = null) => {
+    let roomReservations = mockReservations.filter(res => res.roomNumber === roomId.toString());
+    
+    // Izuzmi postojeću rezervaciju ako je prosleđena
+    if (excludeReservationId) {
+      roomReservations = roomReservations.filter(res => res.id !== excludeReservationId);
+    }
+    
     const dateString = date.toDateString();
     
     let checkinCount = 0;
@@ -525,6 +531,100 @@ export default function MapPage() {
     if (occupiedCount > 0) return "reserved";
     
     return "free";
+  };
+
+  // FUNKCIJA - Validacija nove rezervacije
+  const validateNewReservation = (roomId, checkIn, checkOut) => {
+    // 1. Validacija perioda
+    if (checkIn >= checkOut) {
+      return { 
+        isValid: false, 
+        reason: "Check-in date must be before check-out date" 
+      };
+    }
+
+    // 2. Filtriranje rezervacija za sobu (bez izuzimanja)
+    const roomReservations = mockReservations.filter(res => res.roomNumber === roomId.toString());
+
+    // 3. Provera preklapanja za svaki dan u periodu
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    
+    for (let currentDate = new Date(checkInDate); currentDate <= checkOutDate; currentDate.setDate(currentDate.getDate() + 1)) {
+      const dateString = currentDate.toDateString();
+      
+      let checkinCount = 0;
+      let checkoutCount = 0;
+      let occupiedCount = 0;
+      
+      roomReservations.forEach(res => {
+        const resCheckIn = new Date(res.checkIn.split('-').reverse().join('-'));
+        const resCheckOut = new Date(res.checkOut.split('-').reverse().join('-'));
+        
+        if (dateString === resCheckIn.toDateString()) checkinCount++;
+        if (dateString === resCheckOut.toDateString()) checkoutCount++;
+        if (currentDate > resCheckIn && currentDate < resCheckOut) occupiedCount++;
+      });
+      
+      // Ako je bilo koji dan nedostupan, validacija fail
+      if (checkinCount > 0 || checkoutCount > 0 || occupiedCount > 0) {
+        return { 
+          isValid: false, 
+          reason: "Period overlaps with existing reservations" 
+        };
+      }
+    }
+
+    // 4. Ako je sve prošlo, validacija je uspešna
+    return { isValid: true };
+  };
+
+  // FUNKCIJA - Validacija edit rezervacije
+  const validateEditReservation = (roomId, checkIn, checkOut, existingReservationId) => {
+    // 1. Validacija perioda
+    if (checkIn >= checkOut) {
+      return { 
+        isValid: false, 
+        reason: "Check-in date must be before check-out date" 
+      };
+    }
+
+    // 2. Filtriranje rezervacija za sobu (izuzimajući postojeću rezervaciju)
+    const roomReservations = mockReservations.filter(res => 
+      res.roomNumber === roomId.toString() && res.id !== existingReservationId
+    );
+
+    // 3. Provera preklapanja za svaki dan u periodu
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    
+    for (let currentDate = new Date(checkInDate); currentDate <= checkOutDate; currentDate.setDate(currentDate.getDate() + 1)) {
+      const dateString = currentDate.toDateString();
+      
+      let checkinCount = 0;
+      let checkoutCount = 0;
+      let occupiedCount = 0;
+      
+      roomReservations.forEach(res => {
+        const resCheckIn = new Date(res.checkIn.split('-').reverse().join('-'));
+        const resCheckOut = new Date(res.checkOut.split('-').reverse().join('-'));
+        
+        if (dateString === resCheckIn.toDateString()) checkinCount++;
+        if (dateString === resCheckOut.toDateString()) checkoutCount++;
+        if (currentDate > resCheckIn && currentDate < resCheckOut) occupiedCount++;
+      });
+      
+      // Ako je bilo koji dan nedostupan, validacija fail
+      if (checkinCount > 0 || checkoutCount > 0 || occupiedCount > 0) {
+        return { 
+          isValid: false, 
+          reason: "Period overlaps with existing reservations" 
+        };
+      }
+    }
+
+    // 4. Ako je sve prošlo, validacija je uspešna
+    return { isValid: true };
   };
 
   // NOVA FUNKCIJA - Edit reservation modal
@@ -1018,6 +1118,7 @@ export default function MapPage() {
                   roomId={parseInt(editFormData.roomNumber)}
                   editingDateField={editingDateField}
                   getReservationStatus={getReservationStatus}
+                  excludeReservationId={selectedReservation.id > 1000 ? null : selectedReservation.id}
                 />
 
               </div>
@@ -1160,7 +1261,17 @@ export default function MapPage() {
               </div>
             </div>
             
-            <div className="mt-6 flex justify-end gap-2">
+            <div className="mt-6 flex justify-between gap-2">
+              <button
+                onClick={() => {
+                  // TODO: Implement delete functionality
+                  console.log('Deleting reservation:', editFormData);
+                  setIsEditModalOpen(false);
+                }}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
+              >
+                Delete
+              </button>
               <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
@@ -1169,8 +1280,66 @@ export default function MapPage() {
               </button>
               <button
                 onClick={() => {
-                  // TODO: Implement save functionality
-                  console.log('Saving reservation:', editFormData);
+                  // Validacija podataka
+                  if (!editFormData.guestName || !editFormData.checkIn || !editFormData.checkOut) {
+                    alert('Please fill in all required fields (Guest Name, Check In, Check Out)');
+                    return;
+                  }
+
+                  // Konvertuj datume u Date objekte
+                  const [checkInDay, checkInMonth, checkInYear] = editFormData.checkIn.split('-');
+                  const [checkOutDay, checkOutMonth, checkOutYear] = editFormData.checkOut.split('-');
+                  
+                  const checkInDate = new Date(checkInYear, checkInMonth - 1, checkInDay);
+                  const checkOutDate = new Date(checkOutYear, checkOutMonth - 1, checkOutDay);
+
+                  // Validacija datuma
+                  const validation = selectedReservation.id > 1000 
+                    ? validateNewReservation(editFormData.roomNumber, checkInDate, checkOutDate)
+                    : validateEditReservation(editFormData.roomNumber, checkInDate, checkOutDate, selectedReservation.id);
+
+                  if (!validation.isValid) {
+                    alert(`Validation failed: ${validation.reason}`);
+                    return;
+                  }
+
+                  // Čuvanje rezervacije u mockReservations
+                  if (selectedReservation.id > 1000) {
+                    // Nova rezervacija - dodaj u listu
+                    const newReservation = {
+                      id: Math.max(...mockReservations.map(r => r.id)) + 1, // Generiši novi ID
+                      guestName: editFormData.guestName,
+                      roomNumber: editFormData.roomNumber.toString(),
+                      checkIn: editFormData.checkIn,
+                      checkOut: editFormData.checkOut,
+                      keyStatus: editFormData.keyStatus || "Active",
+                      reservationStatus: editFormData.reservationStatus || "Confirmed",
+                      phone: editFormData.phone || "",
+                      email: editFormData.email || ""
+                    };
+                    
+                    mockReservations.push(newReservation);
+                    console.log('New reservation added:', newReservation);
+                  } else {
+                    // Edit postojeće rezervacije - ažuriraj postojeću
+                    const existingIndex = mockReservations.findIndex(r => r.id === selectedReservation.id);
+                    if (existingIndex !== -1) {
+                      mockReservations[existingIndex] = {
+                        ...mockReservations[existingIndex],
+                        guestName: editFormData.guestName,
+                        roomNumber: editFormData.roomNumber.toString(),
+                        checkIn: editFormData.checkIn,
+                        checkOut: editFormData.checkOut,
+                        keyStatus: editFormData.keyStatus || "Active",
+                        reservationStatus: editFormData.reservationStatus || "Confirmed",
+                        phone: editFormData.phone || "",
+                        email: editFormData.email || ""
+                      };
+                      console.log('Reservation updated:', mockReservations[existingIndex]);
+                    }
+                  }
+                  
+                  alert('Reservation saved successfully!');
                   setIsEditModalOpen(false);
                 }}
                 className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -1186,7 +1355,7 @@ export default function MapPage() {
 }
 
 // Calendar Picker Component
-function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDateField = null, getReservationStatus = null }) {
+function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDateField = null, getReservationStatus = null, excludeReservationId = null }) {
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
 
   const getDaysInMonth = (date) => {
@@ -1212,7 +1381,7 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
     
     // Proveri da li je datum dostupan
     if (roomId) {
-      const status = getReservationStatus(roomId, newDate);
+      const status = getReservationStatus(roomId, newDate, excludeReservationId);
       
       if (editingDateField === 'checkIn') {
         // Za check-in: zabrani checkin, both i reserved datume
@@ -1243,7 +1412,7 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
       const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
       // Postavi vreme na 12:00:00 da izbegnemo timezone probleme
       newDate.setHours(12, 0, 0, 0);
-      const status = getReservationStatus(roomId, newDate);
+      const status = getReservationStatus(roomId, newDate, excludeReservationId);
       
 
       
