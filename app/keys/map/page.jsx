@@ -32,6 +32,7 @@ export default function MapPage() {
   const [roomsDragStartY, setRoomsDragStartY] = useState(0);
   const [roomsScrollTop, setRoomsScrollTop] = useState(0);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isEditCalendarOpen, setIsEditCalendarOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hotel, setHotel] = useState([]);
   const [startRoom, setStartRoom] = useState(() => {
@@ -359,10 +360,15 @@ export default function MapPage() {
   const handleDateSelect = (date) => {
     // Ako je edit modal otvoren, ažuriraj odgovarajući datum
     if (isEditModalOpen && editingDateField) {
-      const dateString = date.toISOString().split('T')[0].split('-').reverse().join('-');
+      // Formatiraj datum kao DD-MM-YYYY da izbegnemo timezone probleme
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const dateString = `${day}-${month}-${year}`;
+      
       updateEditFormData(editingDateField, dateString);
       setEditingDateField(null);
-      setIsCalendarOpen(false);
+      setIsEditCalendarOpen(false);
     } else {
       // Inače, ažuriraj startDate za MAP
       setSelectedDate(date);
@@ -438,8 +444,8 @@ export default function MapPage() {
   useEffect(() => {
     const handleClickOutside = (event) => {
       // Ako je kalendar otvoren u edit modal-u, zatvori ga
-      if (isCalendarOpen && isEditModalOpen) {
-        setIsCalendarOpen(false);
+      if (isEditCalendarOpen && isEditModalOpen) {
+        setIsEditCalendarOpen(false);
         setEditingDateField(null);
         return;
       }
@@ -450,14 +456,14 @@ export default function MapPage() {
       }
     };
 
-    if (isCalendarOpen) {
+    if (isCalendarOpen || isEditCalendarOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isCalendarOpen, isEditModalOpen]);
+  }, [isCalendarOpen, isEditCalendarOpen, isEditModalOpen]);
 
   const handleApplyFilter = (filterData, updateCurrentFilter = true, filterName = null) => {
     if (currentFilter && updateCurrentFilter) {
@@ -497,7 +503,7 @@ export default function MapPage() {
 
   // NOVA FUNKCIJA - Vraća status: "free", "reserved", "checkin", "checkout", "both"
   const getReservationStatus = (roomId, date) => {
-    const roomReservations = mockReservations.filter(res => res.roomNumber === roomId);
+    const roomReservations = mockReservations.filter(res => res.roomNumber === roomId.toString());
     const dateString = date.toDateString();
     
     let checkinCount = 0;
@@ -1000,15 +1006,20 @@ export default function MapPage() {
         <div className="test-modal" onClick={() => setIsEditModalOpen(false)}>
           <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
             {/* Calendar Dropdown */}
-            {isCalendarOpen && (
-              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded-md shadow-lg z-50 p-4">
+            {isEditCalendarOpen && (
+              <div 
+                className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded-md shadow-lg z-50 p-4"
+                style={{ pointerEvents: 'auto' }}
+                onClick={(e) => e.stopPropagation()}
+              >
                 <CalendarPicker 
                   selectedDate={selectedDate}
                   onDateSelect={handleDateSelect}
-                  roomId={editFormData.roomNumber}
+                  roomId={parseInt(editFormData.roomNumber)}
                   editingDateField={editingDateField}
                   getReservationStatus={getReservationStatus}
                 />
+
               </div>
             )}
             <div className="flex justify-between items-center mb-6">
@@ -1060,14 +1071,13 @@ export default function MapPage() {
                     value={editFormData.checkIn ? editFormData.checkIn.split('-').reverse().join('-') : ""}
                     onChange={(e) => updateEditFormData('checkIn', e.target.value)}
                     onClick={() => {
-                      console.log('Opening calendar for checkIn from edit modal');
                       setEditingDateField('checkIn');
                       // Postavi selectedDate na datum iz forme ako postoji
                       if (editFormData.checkIn) {
                         const [day, month, year] = editFormData.checkIn.split('-');
                         setSelectedDate(new Date(year, month - 1, day));
                       }
-                      setIsCalendarOpen(true);
+                      setIsEditCalendarOpen(true);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                     placeholder="Click to select date..."
@@ -1085,14 +1095,13 @@ export default function MapPage() {
                     value={editFormData.checkOut ? editFormData.checkOut.split('-').reverse().join('-') : ""}
                     onChange={(e) => updateEditFormData('checkOut', e.target.value)}
                     onClick={() => {
-                      console.log('Opening calendar for checkOut from edit modal');
                       setEditingDateField('checkOut');
                       // Postavi selectedDate na datum iz forme ako postoji
                       if (editFormData.checkOut) {
                         const [day, month, year] = editFormData.checkOut.split('-');
                         setSelectedDate(new Date(year, month - 1, day));
                       }
-                      setIsCalendarOpen(true);
+                      setIsEditCalendarOpen(true);
                     }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
                     placeholder="Click to select date..."
@@ -1178,7 +1187,6 @@ export default function MapPage() {
 
 // Calendar Picker Component
 function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDateField = null, getReservationStatus = null }) {
-  console.log('CalendarPicker props:', { roomId, editingDateField, hasGetReservationStatus: !!getReservationStatus });
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
 
   const getDaysInMonth = (date) => {
@@ -1207,13 +1215,13 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
       const status = getReservationStatus(roomId, newDate);
       
       if (editingDateField === 'checkIn') {
-        // Za check-in: zabrani occupied i checkin datume
-        if (status === 'reserved' || status === 'checkin' || status === 'both') {
+        // Za check-in: zabrani checkin, both i reserved datume
+        if (status === 'checkin' || status === 'both' || status === 'reserved') {
           return; // Ne dozvoli izbor nedostupnog datuma
         }
       } else if (editingDateField === 'checkOut') {
-        // Za check-out: zabrani occupied i checkout datume, ali dozvoli checkin datume
-        if (status === 'reserved' || status === 'checkout') {
+        // Za check-out: zabrani checkout, both i reserved datume
+        if (status === 'checkout' || status === 'both' || status === 'reserved') {
           return; // Ne dozvoli izbor nedostupnog datuma
         }
       }
@@ -1228,12 +1236,7 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
            selectedDate.getFullYear() === currentMonth.getFullYear();
   };
 
-  const isToday = (day) => {
-    const today = new Date();
-    return today.getDate() === day && 
-           today.getMonth() === currentMonth.getMonth() && 
-           today.getFullYear() === currentMonth.getFullYear();
-  };
+
 
   const isDateDisabled = (day) => {
     if (roomId) {
@@ -1242,13 +1245,15 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
       newDate.setHours(12, 0, 0, 0);
       const status = getReservationStatus(roomId, newDate);
       
-      if (editingDateField === 'checkIn') {
-        // Za check-in: zabrani occupied i checkin datume
-        return status === 'reserved' || status === 'checkin' || status === 'both';
-      } else if (editingDateField === 'checkOut') {
-        // Za check-out: zabrani occupied i checkout datume, ali dozvoli checkin datume
-        return status === 'reserved' || status === 'checkout';
-      }
+
+      
+              if (editingDateField === 'checkIn') {
+          // Za check-in: zabrani checkin, both i reserved datume
+          return status === 'checkin' || status === 'both' || status === 'reserved';
+        } else if (editingDateField === 'checkOut') {
+          // Za check-out: zabrani checkout, both i reserved datume
+          return status === 'checkout' || status === 'both' || status === 'reserved';
+        }
     }
     return false;
   };
@@ -1264,22 +1269,32 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
 
     for (let day = 1; day <= daysInMonth; day++) {
       const isSelected = isSelectedDate(day);
-      const isTodayDate = isToday(day);
       const isDisabled = isDateDisabled(day);
       
       days.push(
         <button
           key={day}
-          onClick={() => handleDateClick(day)}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isDisabled) {
+              handleDateClick(day);
+            }
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isDisabled) {
+              handleDateClick(day);
+            }
+          }}
           disabled={isDisabled}
           className={`p-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
             isDisabled
               ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
               : isSelected 
                 ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                : isTodayDate 
-                  ? 'bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200' 
-                  : 'text-gray-700 hover:bg-blue-100'
+                : 'text-gray-700 hover:bg-blue-100'
           }`}
         >
           {day}
@@ -1291,7 +1306,7 @@ function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDate
   };
 
   return (
-    <div className="w-64">
+    <div className="w-64" style={{ pointerEvents: 'auto' }}>
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <button
