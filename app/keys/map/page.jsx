@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
-import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { mockReservations, mockRooms } from "@/lib/mockData";
 
 export default function MapPage() {
@@ -49,6 +49,12 @@ export default function MapPage() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // NOVI STATE ZA MODAL
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedReservation, setSelectedReservation] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [allowRoomEdit, setAllowRoomEdit] = useState(false);
+  const [editingDateField, setEditingDateField] = useState(null); // 'checkIn' ili 'checkOut'
   const headerRef = useRef(null);
   const calendarRef = useRef(null);
   const roomsContainerRef = useRef(null);
@@ -142,6 +148,8 @@ export default function MapPage() {
     
     return headers;
   };
+
+
 
   // Funkcija za određivanje gde treba da se prikaže nedelja
   const getWeekDisplayInfo = (start) => {
@@ -349,9 +357,18 @@ export default function MapPage() {
   };
 
   const handleDateSelect = (date) => {
-    setSelectedDate(date);
-    setStartDate(date);
-    setIsCalendarOpen(false);
+    // Ako je edit modal otvoren, ažuriraj odgovarajući datum
+    if (isEditModalOpen && editingDateField) {
+      const dateString = date.toISOString().split('T')[0].split('-').reverse().join('-');
+      updateEditFormData(editingDateField, dateString);
+      setEditingDateField(null);
+      setIsCalendarOpen(false);
+    } else {
+      // Inače, ažuriraj startDate za MAP
+      setSelectedDate(date);
+      setStartDate(date);
+      setIsCalendarOpen(false);
+    }
   };
 
   const handleMoveLeft = () => {
@@ -420,6 +437,14 @@ export default function MapPage() {
   // Close calendar when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Ako je kalendar otvoren u edit modal-u, zatvori ga
+      if (isCalendarOpen && isEditModalOpen) {
+        setIsCalendarOpen(false);
+        setEditingDateField(null);
+        return;
+      }
+      
+      // Ako je kalendar otvoren u header-u, zatvori ga
       if (calendarRef.current && !calendarRef.current.contains(event.target)) {
         setIsCalendarOpen(false);
       }
@@ -432,7 +457,7 @@ export default function MapPage() {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
-  }, [isCalendarOpen]);
+  }, [isCalendarOpen, isEditModalOpen]);
 
   const handleApplyFilter = (filterData, updateCurrentFilter = true, filterName = null) => {
     if (currentFilter && updateCurrentFilter) {
@@ -494,6 +519,79 @@ export default function MapPage() {
     if (occupiedCount > 0) return "reserved";
     
     return "free";
+  };
+
+  // NOVA FUNKCIJA - Edit reservation modal
+  const editReservation = (roomId, date, isRightHalf = false, allowRoomEditParam = false) => {
+    // Postavi allowRoomEdit state
+    setAllowRoomEdit(allowRoomEditParam);
+    
+    // Pronađi rezervaciju koja odgovara sobi i datumu
+    const reservation = mockReservations.find(res => {
+      const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
+      const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
+      const dateString = date.toDateString();
+      
+      // Proveri da li je datum u periodu rezervacije
+      return res.roomNumber === roomId && 
+             date >= checkIn && 
+             date <= checkOut;
+    });
+    
+    // Proveri da li postoji rezervaciju koja počinje ili se završava na taj datum
+    const checkInReservation = mockReservations.find(res => {
+      const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
+      return res.roomNumber === roomId && date.toDateString() === checkIn.toDateString();
+    });
+    
+    const checkOutReservation = mockReservations.find(res => {
+      const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
+      return res.roomNumber === roomId && date.toDateString() === checkOut.toDateString();
+    });
+    
+    // Ako je kliknuto na desni deo (check-in) i postoji rezervaciju koja počinje tog dana
+    if (isRightHalf && checkInReservation) {
+      setSelectedReservation(checkInReservation);
+      setEditFormData(checkInReservation);
+      setIsEditModalOpen(true);
+    }
+    // Ako je kliknuto na levi deo (check-out) i postoji rezervaciju koja se završava tog dana
+    else if (!isRightHalf && checkOutReservation) {
+      setSelectedReservation(checkOutReservation);
+      setEditFormData(checkOutReservation);
+      setIsEditModalOpen(true);
+    }
+    // Ako postoji rezervaciju u periodu, ali nije check-in/check-out dan
+    else if (reservation && !checkInReservation && !checkOutReservation) {
+      setSelectedReservation(reservation);
+      setEditFormData(reservation);
+      setIsEditModalOpen(true);
+    }
+    // Inače, kreiraj novu rezervaciju
+    else {
+      const newReservation = {
+        id: Date.now(), // Privremeni ID
+        guestName: "",
+        roomNumber: roomId,
+        checkIn: isRightHalf ? `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}` : "",
+        checkOut: !isRightHalf ? `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}` : "",
+        keyStatus: "Active",
+        reservationStatus: "Confirmed",
+        phone: "",
+        email: ""
+      };
+      setSelectedReservation(newReservation);
+      setEditFormData(newReservation);
+      setIsEditModalOpen(true);
+    }
+  };
+
+  // Funkcija za ažuriranje form podataka
+  const updateEditFormData = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -814,9 +912,9 @@ export default function MapPage() {
                         const reservationStatus = getReservationStatus(roomNumber, currentDate);
                         
                         // Log za dan, sobu i status (samo ako nije free)
-                        if (reservationStatus !== 'free') {
-                          console.log(`Room ${roomNumber}, Date ${currentDate.toLocaleDateString()}, Status: ${reservationStatus}`);
-                        }
+                        // if (reservationStatus !== 'free') {
+                        //   console.log(`Room ${roomNumber}, Date ${currentDate.toLocaleDateString()}, Status: ${reservationStatus}`);
+                        // }
                         
                         
                                                  // Logika za boje i separatore u jednom bloku
@@ -861,15 +959,17 @@ export default function MapPage() {
                           <React.Fragment key={index}>
                             {/* Levi deo dana */}
                             <div
-                              className={`px-1 py-3 text-center text-xs border-r ${leftSeparator} ${leftBgColor}`}
+                              className={`px-1 py-3 text-center text-xs border-r ${leftSeparator} ${leftBgColor} cursor-pointer hover:bg-gray-100`}
+                              onClick={() => editReservation(roomNumber, currentDate, false, false)}
                             >
                             </div>
                             {/* Desni deo dana */}
                             <div
-                              className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${rightBgColor}`}
+                              className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${rightBgColor} cursor-pointer hover:bg-gray-100`}
                               style={{
                                 borderLeft: rightSeparator
                               }}
+                              onClick={() => editReservation(roomNumber, currentDate, true, false)}
                             >
                             </div>
                           </React.Fragment>
@@ -894,12 +994,191 @@ export default function MapPage() {
           onApplyFilter={handleApplyFilter}
         />
       )}
+
+      {/* Edit Reservation Modal */}
+      {isEditModalOpen && selectedReservation && (
+        <div className="test-modal" onClick={() => setIsEditModalOpen(false)}>
+          <div className="test-modal-content" onClick={(e) => e.stopPropagation()}>
+            {/* Calendar Dropdown */}
+            {isCalendarOpen && (
+              <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white border border-gray-300 rounded-md shadow-lg z-50 p-4">
+                <CalendarPicker 
+                  selectedDate={selectedDate}
+                  onDateSelect={handleDateSelect}
+                  roomId={editFormData.roomNumber}
+                  editingDateField={editingDateField}
+                  getReservationStatus={getReservationStatus}
+                />
+              </div>
+            )}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-800">
+                {selectedReservation.id > 1000 ? "New Reservation" : "Edit Reservation"}
+              </h2>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
+                <input
+                  type="text"
+                  value={editFormData.guestName || ""}
+                  onChange={(e) => updateEditFormData('guestName', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter guest name..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
+                {allowRoomEdit ? (
+                  <input
+                    type="text"
+                    value={editFormData.roomNumber || ""}
+                    onChange={(e) => updateEditFormData('roomNumber', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter room number..."
+                  />
+                ) : (
+                  <div className="w-full px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-gray-700">
+                    {editFormData.roomNumber || ""}
+                  </div>
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check In</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editFormData.checkIn ? editFormData.checkIn.split('-').reverse().join('-') : ""}
+                    onChange={(e) => updateEditFormData('checkIn', e.target.value)}
+                    onClick={() => {
+                      console.log('Opening calendar for checkIn from edit modal');
+                      setEditingDateField('checkIn');
+                      // Postavi selectedDate na datum iz forme ako postoji
+                      if (editFormData.checkIn) {
+                        const [day, month, year] = editFormData.checkIn.split('-');
+                        setSelectedDate(new Date(year, month - 1, day));
+                      }
+                      setIsCalendarOpen(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    placeholder="Click to select date..."
+                    readOnly
+                  />
+                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Check Out</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editFormData.checkOut ? editFormData.checkOut.split('-').reverse().join('-') : ""}
+                    onChange={(e) => updateEditFormData('checkOut', e.target.value)}
+                    onClick={() => {
+                      console.log('Opening calendar for checkOut from edit modal');
+                      setEditingDateField('checkOut');
+                      // Postavi selectedDate na datum iz forme ako postoji
+                      if (editFormData.checkOut) {
+                        const [day, month, year] = editFormData.checkOut.split('-');
+                        setSelectedDate(new Date(year, month - 1, day));
+                      }
+                      setIsCalendarOpen(true);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer"
+                    placeholder="Click to select date..."
+                    readOnly
+                  />
+                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Key Status</label>
+                <select
+                  value={editFormData.keyStatus || "Active"}
+                  onChange={(e) => updateEditFormData('keyStatus', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Lost">Lost</option>
+                  <option value="Invalidated">Invalidated</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Reservation Status</label>
+                <select
+                  value={editFormData.reservationStatus || "Confirmed"}
+                  onChange={(e) => updateEditFormData('reservationStatus', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={editFormData.phone || ""}
+                  onChange={(e) => updateEditFormData('phone', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter phone number..."
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                <input
+                  type="email"
+                  value={editFormData.email || ""}
+                  onChange={(e) => updateEditFormData('email', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter email..."
+                />
+              </div>
+            </div>
+            
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  // TODO: Implement save functionality
+                  console.log('Saving reservation:', editFormData);
+                  setIsEditModalOpen(false);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
 
 // Calendar Picker Component
-function CalendarPicker({ selectedDate, onDateSelect }) {
+function CalendarPicker({ selectedDate, onDateSelect, roomId = null, editingDateField = null, getReservationStatus = null }) {
+  console.log('CalendarPicker props:', { roomId, editingDateField, hasGetReservationStatus: !!getReservationStatus });
   const [currentMonth, setCurrentMonth] = useState(new Date(selectedDate));
 
   const getDaysInMonth = (date) => {
@@ -920,6 +1199,26 @@ function CalendarPicker({ selectedDate, onDateSelect }) {
 
   const handleDateClick = (day) => {
     const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+    // Postavi vreme na 12:00:00 da izbegnemo timezone probleme
+    newDate.setHours(12, 0, 0, 0);
+    
+    // Proveri da li je datum dostupan
+    if (roomId) {
+      const status = getReservationStatus(roomId, newDate);
+      
+      if (editingDateField === 'checkIn') {
+        // Za check-in: zabrani occupied i checkin datume
+        if (status === 'reserved' || status === 'checkin' || status === 'both') {
+          return; // Ne dozvoli izbor nedostupnog datuma
+        }
+      } else if (editingDateField === 'checkOut') {
+        // Za check-out: zabrani occupied i checkout datume, ali dozvoli checkin datume
+        if (status === 'reserved' || status === 'checkout') {
+          return; // Ne dozvoli izbor nedostupnog datuma
+        }
+      }
+    }
+    
     onDateSelect(newDate);
   };
 
@@ -936,6 +1235,24 @@ function CalendarPicker({ selectedDate, onDateSelect }) {
            today.getFullYear() === currentMonth.getFullYear();
   };
 
+  const isDateDisabled = (day) => {
+    if (roomId) {
+      const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day);
+      // Postavi vreme na 12:00:00 da izbegnemo timezone probleme
+      newDate.setHours(12, 0, 0, 0);
+      const status = getReservationStatus(roomId, newDate);
+      
+      if (editingDateField === 'checkIn') {
+        // Za check-in: zabrani occupied i checkin datume
+        return status === 'reserved' || status === 'checkin' || status === 'both';
+      } else if (editingDateField === 'checkOut') {
+        // Za check-out: zabrani occupied i checkout datume, ali dozvoli checkin datume
+        return status === 'reserved' || status === 'checkout';
+      }
+    }
+    return false;
+  };
+
   const renderCalendar = () => {
     const daysInMonth = getDaysInMonth(currentMonth);
     const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
@@ -948,17 +1265,21 @@ function CalendarPicker({ selectedDate, onDateSelect }) {
     for (let day = 1; day <= daysInMonth; day++) {
       const isSelected = isSelectedDate(day);
       const isTodayDate = isToday(day);
+      const isDisabled = isDateDisabled(day);
       
       days.push(
         <button
           key={day}
           onClick={() => handleDateClick(day)}
-          className={`p-2 text-sm rounded-md hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            isSelected 
-              ? 'bg-blue-600 text-white' 
-              : isTodayDate 
-                ? 'bg-blue-100 text-blue-800 font-semibold' 
-                : 'text-gray-700'
+          disabled={isDisabled}
+          className={`p-2 text-sm rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+            isDisabled
+              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              : isSelected 
+                ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                : isTodayDate 
+                  ? 'bg-blue-100 text-blue-800 font-semibold hover:bg-blue-200' 
+                  : 'text-gray-700 hover:bg-blue-100'
           }`}
         >
           {day}
