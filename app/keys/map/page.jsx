@@ -1,12 +1,10 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
 import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon, ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { mockReservations, mockRooms } from "@/lib/mockData";
-
-
 
 export default function MapPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -15,7 +13,6 @@ export default function MapPage() {
   const [currentFilter, setCurrentFilter] = useState(null);
   const [savedFilters, setSavedFilters] = useState([]);
   const [startDate, setStartDate] = useState(() => {
-    // Pokušaj da učitaj sačuvanu startDate poziciju
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('toccata-map-startdate');
       if (saved) {
@@ -26,7 +23,6 @@ export default function MapPage() {
         }
       }
     }
-    // Default pozicija - današnji datum
     return new Date();
   });
   const [isDragging, setIsDragging] = useState(false);
@@ -39,7 +35,6 @@ export default function MapPage() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [hotel, setHotel] = useState([]);
   const [startRoom, setStartRoom] = useState(() => {
-    // Pokušaj da učitaj sačuvanu startRoom poziciju
     if (typeof window !== 'undefined') {
       const saved = localStorage.getItem('toccata-map-startroom');
       if (saved) {
@@ -50,7 +45,6 @@ export default function MapPage() {
         }
       }
     }
-    // Default pozicija - prva soba
     return 0;
   });
   const [loading, setLoading] = useState(true);
@@ -62,7 +56,8 @@ export default function MapPage() {
   // Konstante za fluid scroll
   const VISIBLE_DAYS = 21; // 3 nedelje
   const VISIBLE_ROOMS = 15; // broj soba koji se prikazuje
-  const DAY_WIDTH = 50; // px po danu
+  const DAY_WIDTH = 25; // px po polovini dana (levi/desni deo)
+  const DAY_PARTS = 2; // levi i desni deo dana
 
   // Funkcija za računanje broja nedelje u godini
   const getWeekNumber = (date) => {
@@ -99,20 +94,18 @@ export default function MapPage() {
   // Generisanje nedelja header-a - fluid scroll
   const generateWeekHeaders = (start) => {
     const headers = [];
-    const weekMap = new Map(); // Map za praćenje nedelja i njihovih dana
+    const weekMap = new Map();
     
-    // Prođi kroz sve vidljive dane i grupisi ih po nedeljama
     for (let i = 0; i < VISIBLE_DAYS; i++) {
       const currentDate = new Date(start);
       currentDate.setDate(start.getDate() + i);
       
-      // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
-      const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
-      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+      const dayOfWeek = currentDate.getDay();
+      const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       const weekStartDate = new Date(currentDate);
       weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
       
-      const weekKey = weekStartDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      const weekKey = weekStartDate.toISOString().split('T')[0];
       const weekNumber = getWeekNumber(weekStartDate);
       
       if (!weekMap.has(weekKey)) {
@@ -126,7 +119,6 @@ export default function MapPage() {
       weekMap.get(weekKey).days.push(i);
     }
     
-    // Konvertuj map u array i sortiraj po startIndex
     return Array.from(weekMap.values()).sort((a, b) => a.startIndex - b.startIndex);
   };
 
@@ -155,29 +147,20 @@ export default function MapPage() {
   const getWeekDisplayInfo = (start) => {
     const weekInfo = [];
     
-    // Odredi koji je prvi dan u view-u
     const firstDayOfView = new Date(start);
-    const firstDayOfWeek = firstDayOfView.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
+    const firstDayOfWeek = firstDayOfView.getDay();
     
-    // Odredi prikaz na osnovu prvog dana
     let displayPattern;
     if (firstDayOfWeek === 0) {
-      // Nedelja: 0,1,1,1 - ne prikazuj prvu, prikazuj druge tri
       displayPattern = [false, true, true, true];
     } else if (firstDayOfWeek === 1) {
-      // Ponedeljak: 1,1,1,0 - prikazuj prve tri, ne prikazuj poslednju
       displayPattern = [true, true, true, false];
     } else if (firstDayOfWeek === 2) {
-      // Utorak: 1,1,1,0 - prikazuj prve tri, ne prikazuj poslednju
       displayPattern = [true, true, true, false];
     } else {
-      // Ostali dani (3-6): 1,1,1,1 - prikazuj sve četiri
       displayPattern = [true, true, true, true];
     }
     
-
-    
-    // Generiši nedelje prema pattern-u
     for (let weekIndex = 0; weekIndex < 4; weekIndex++) {
       if (displayPattern[weekIndex]) {
         const weekStartDate = new Date(start);
@@ -186,7 +169,6 @@ export default function MapPage() {
         const weekNumber = getWeekNumber(weekStartDate);
         const daysInWeek = weekIndex === 0 ? 7 - firstDayOfWeek : (weekIndex === 3 ? firstDayOfWeek : 7);
         
-        // Izračunaj poziciju na osnovu stvarnog prvog dana nedelje u view-u
         let index = Math.max(0, weekIndex * 7 - firstDayOfWeek);
         
         weekInfo.push({
@@ -218,7 +200,7 @@ export default function MapPage() {
     if (!isDragging) return;
     
     const deltaX = e.clientX - dragStartX;
-    const daysToMove = Math.round(deltaX / DAY_WIDTH);
+    const daysToMove = Math.round(deltaX / (DAY_WIDTH * 2));
     
     if (daysToMove !== 0) {
       const newStartDate = new Date(dragStartDate);
@@ -244,20 +226,16 @@ export default function MapPage() {
     
     const deltaY = roomsDragStartY - e.clientY;
     
-    // Pomeranje na dole (deltaY < 0) - proveri da li može da se pomeri unazad
     if (deltaY < 0 && startRoom > 0) {
       const newStartRoom = Math.max(0, startRoom - 1);
       setStartRoom(newStartRoom);
       setRoomsDragStartY(e.clientY);
-      // Resetuj scroll poziciju
       roomsContainerRef.current.scrollTop = 0;
     }
-    // Pomeranje na gore (deltaY > 0) - proveri da li može da se pomeri unapred
     else if (deltaY > 0 && startRoom < hotel.length - VISIBLE_ROOMS) {
       const newStartRoom = Math.min(hotel.length - VISIBLE_ROOMS, startRoom + 1);
       setStartRoom(newStartRoom);
       setRoomsDragStartY(e.clientY);
-      // Resetuj scroll poziciju
       roomsContainerRef.current.scrollTop = 0;
     }
   };
@@ -319,66 +297,11 @@ export default function MapPage() {
     }
   }, []);
 
-  // STARI KOD - Fetch real rooms data from TOCCATA API
-  // useEffect(() => {
-  //   const fetchRooms = async () => {
-  //     try {
-  //       setLoading(true);
-  //       const response = await fetch('/api/rooms');
-  //       
-  //       if (!response.ok) {
-  //         throw new Error(`HTTP error! status: ${response.status}`);
-  //       }
-  //       
-  //       const data = await response.json();
-  //       
-  //       if (data.success) {
-  //         // Group rooms by floor
-  //         const roomsByFloor = {};
-  //         data.rooms.forEach(room => {
-  //           const floorNumber = parseInt(room.floorName.split('.')[0]);
-  //           if (!roomsByFloor[floorNumber]) {
-  //             roomsByFloor[floorNumber] = [];
-  //           }
-  //           
-  //           // Transform TOCCATA data to our format
-  //           const transformedRoom = {
-  //             id: room.roomName,
-  //             status: room.availability === 'ASSIGNED' ? 'occupied' : 'vacant',
-  //             online: room.online,
-  //             cleanliness: room.cleanliness,
-  //             icons: room.online ? ['wifi'] : ['offline']
-  //           };
-  //           
-  //           roomsByFloor[floorNumber].push(transformedRoom);
-  //         });
-  //         
-  //         // Convert to 2D array format
-  //         const floorsArray = Object.keys(roomsByFloor)
-  //           .sort((a, b) => parseInt(a) - parseInt(b))
-  //           .map(floorNumber => roomsByFloor[floorNumber]);
-  //         
-  //         setHotel(floorsArray);
-  //       } else {
-  //         throw new Error(data.error || 'Failed to fetch rooms');
-  //       }
-  //     } catch (err) {
-  //       console.error('Error fetching rooms:', err);
-  //       setError(err.message);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchRooms();
-  // }, []);
-
   // NOVI KOD - Use mock data from centralized source
   useEffect(() => {
     const loadMockRooms = () => {
       try {
         setLoading(true);
-        // Use mock data directly from lib/mockData.js
         setHotel(mockRooms);
       } catch (err) {
         console.error('Error loading mock rooms:', err);
@@ -411,7 +334,6 @@ export default function MapPage() {
   };
 
   const handleFilterUpdate = () => {
-    // Reload saved filters from localStorage
     const saved = localStorage.getItem("toccata-saved-reservation-filters");
     if (saved) {
       const parsed = JSON.parse(saved);
@@ -421,7 +343,6 @@ export default function MapPage() {
 
   const handleCalendarToggle = () => {
     if (!isCalendarOpen) {
-      // Kada se otvara kalendar, postavi selectedDate na trenutni startDate
       setSelectedDate(new Date(startDate));
     }
     setIsCalendarOpen(!isCalendarOpen);
@@ -458,12 +379,10 @@ export default function MapPage() {
   // Keyboard navigation for horizontal and vertical scroll
   useEffect(() => {
     const handleKeyDown = (e) => {
-      // Proveri da li je fokus na stranici (ne na input poljima)
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return;
       }
 
-      // Horizontal scroll (datumi)
       if (e.key === 'ArrowLeft') {
         e.preventDefault();
         const newStartDate = new Date(startDate);
@@ -476,7 +395,6 @@ export default function MapPage() {
         setStartDate(newStartDate);
       }
       
-      // Vertical scroll (sobe) - sada koristi istu logiku kao datumi
       if (e.key === 'ArrowUp') {
         e.preventDefault();
         handleRoomsMoveLeft();
@@ -485,11 +403,9 @@ export default function MapPage() {
         handleRoomsMoveRight();
       } else if (e.key === 'PageUp') {
         e.preventDefault();
-        // Pomeri se za 3 sobe unazad (smanjeno za kompaktnije polja)
         setStartRoom(Math.max(0, startRoom - 3));
       } else if (e.key === 'PageDown') {
         e.preventDefault();
-        // Pomeri se za 3 sobe unapred (smanjeno za kompaktnije polja)
         const maxStartRoom = Math.max(0, hotel.length - VISIBLE_ROOMS);
         setStartRoom(Math.min(maxStartRoom, startRoom + 3));
       }
@@ -519,7 +435,6 @@ export default function MapPage() {
   }, [isCalendarOpen]);
 
   const handleApplyFilter = (filterData, updateCurrentFilter = true, filterName = null) => {
-    // Ažuriraj currentFilter sa novim podacima
     if (currentFilter && updateCurrentFilter) {
       const updatedFilter = {
         ...currentFilter,
@@ -529,50 +444,75 @@ export default function MapPage() {
       setCurrentFilter(updatedFilter);
     }
     
-    // Ovde bi trebalo da se primeni filter na podatke
-    // Za sada samo zatvaramo modal
     setIsFilterOpen(false);
   };
 
-     // Funkcija za određivanje boje nedelje - fluid scroll
-   const getWeekColor = (currentDate) => {
-     // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
-     const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
-     const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
-     const weekStartDate = new Date(currentDate);
-     weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
-     
-     // Izračunaj broj nedelje za ovaj ponedeljak
-     const weekNumber = getWeekNumber(weekStartDate);
-     
-           // Koristi broj nedelje za određivanje boje - samo plava i zelena
-      const colors = ['bg-blue-50', 'bg-green-50'];
-      const colorIndex = (weekNumber - 1) % 2; // -1 jer weekNumber počinje od 1, % 2 za samo 2 boje
-      return colors[colorIndex] || 'bg-gray-50';
-   };
+  // Funkcija za određivanje boje nedelje - fluid scroll
+  const getWeekColor = (currentDate) => {
+    const dayOfWeek = currentDate.getDay();
+    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+    const weekStartDate = new Date(currentDate);
+    weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
+    
+    const weekNumber = getWeekNumber(weekStartDate);
+    
+    const colors = ['bg-blue-50', 'bg-green-50'];
+    const colorIndex = (weekNumber - 1) % 2;
+    return colors[colorIndex] || 'bg-gray-50';
+  };
 
   // Funkcija za boju meseca (žuta/narandžasta)
   const getMonthColor = (currentDate) => {
-    const month = currentDate.getMonth(); // 0-11
+    const month = currentDate.getMonth();
     const year = currentDate.getFullYear();
-    const monthKey = year * 12 + month; // Jedinstveni ključ za mesec
+    const monthKey = year * 12 + month;
     
     return monthKey % 2 === 0 ? 'bg-yellow-100' : 'bg-orange-100';
   };
 
-  // Funkcija za proveru da li postoji rezervacija za sobu/dan
-  const hasReservation = (roomId, date) => {
-    return mockReservations.some(reservation => {
-      // Proveri da li je soba ista
-      if (reservation.roomNumber !== roomId) return false;
+  // NOVA FUNKCIJA - Vraća status: "free", "reserved", "checkin", "checkout", "both"
+  const getReservationStatus = (roomId, date) => {
+    // Pronađi sve rezervacije za ovu sobu na ovaj datum
+    const reservations = mockReservations.filter(res => {
+      if (res.roomNumber !== roomId) return false;
       
       // Konvertuj datume u Date objekte za poređenje
-      const checkIn = new Date(reservation.checkIn.split('-').reverse().join('-'));
-      const checkOut = new Date(reservation.checkOut.split('-').reverse().join('-'));
+      const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
+      const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
       
-      // Proveri da li je datum u periodu rezervacije (uključujući check-in, ali ne check-out)
-      return date >= checkIn && date < checkOut;
+      // Proveri da li je datum u periodu rezervacije (uključujući check-out dan)
+      return date >= checkIn && date <= checkOut;
     });
+    
+    if (reservations.length === 0) return "free";
+    
+    // Proveri da li postoji check-in i check-out na isti dan
+    let hasCheckIn = false;
+    let hasCheckOut = false;
+    
+    reservations.forEach(res => {
+      const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
+      const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
+      
+      // Proveri da li je ovo check-in dan
+      if (date.getTime() === checkIn.getTime()) {
+        hasCheckIn = true;
+      }
+      // Proveri da li je ovo check-out dan
+      if (date.getTime() === checkOut.getTime()) {
+        hasCheckOut = true;
+      }
+    });
+    
+    if (hasCheckIn && hasCheckOut) {
+      return "both"; // Check-in i check-out isti dan
+    } else if (hasCheckIn) {
+      return "checkin"; // Check-in dan
+    } else if (hasCheckOut) {
+      return "checkout"; // Check-out dan
+    } else {
+      return "reserved"; // Srednji dani rezervacije
+    }
   };
 
   return (
@@ -718,23 +658,18 @@ export default function MapPage() {
                     const currentDate = new Date(startDate);
                     currentDate.setDate(startDate.getDate() + index);
                     
-                    // Proveri da li je ovo prvi dan meseca ili prvi prikazani dan
                     const isFirstDayOfMonth = currentDate.getDate() === 1;
                     const isFirstVisibleDay = index === 0;
                     
-                    // Prikaži mesec ako je prvi dan meseca ILI ako je prvi prikazani dan
                     if (!isFirstDayOfMonth && !isFirstVisibleDay) {
                       return null;
                     }
                     
-                    // Izračunaj koliko dana traje ovaj mesec
                     let daysInMonth;
                     if (isFirstVisibleDay) {
-                      // Za prvi prikazani dan, računaj koliko dana ostaje do kraja meseca
                       const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
                       daysInMonth = Math.min(lastDayOfMonth - currentDate.getDate() + 1, VISIBLE_DAYS);
                     } else {
-                      // Za ostale dane, koristi standardnu logiku
                       const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0).getDate();
                       daysInMonth = Math.min(lastDayOfMonth - currentDate.getDate() + 1, VISIBLE_DAYS - index);
                     }
@@ -772,35 +707,26 @@ export default function MapPage() {
                     const currentDate = new Date(startDate);
                     currentDate.setDate(startDate.getDate() + index);
                     
-                    // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
-                    const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
-                    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+                    const dayOfWeek = currentDate.getDay();
+                    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
                     const weekStartDate = new Date(currentDate);
                     weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
                     
-                    // Proveri da li je ovo prvi dan nedelje (ponedeljak) ili prvi prikazani dan
                     const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
                     const isFirstVisibleDay = index === 0;
                     
-                    // Prikaži nedelju ako je prvi dan nedelje ILI ako je prvi prikazani dan
                     if (!isFirstDayOfWeek && !isFirstVisibleDay) {
                       return null;
                     }
                     
-                    // Izračunaj koliko dana traje ova nedelja
                     let daysInWeek;
                     if (isFirstVisibleDay) {
-                      // Za prvi prikazani dan, računaj koliko dana ostaje do kraja nedelje
-                      // dayOfWeek: 0=nedelja, 1=ponedeljak, 2=utorak, ..., 6=subota
-                      // Ako je nedelja (0), ostaje 1 dan; ako je ponedeljak (1), ostaje 7 dana
                       const daysToEndOfWeek = dayOfWeek === 0 ? 1 : 8 - dayOfWeek;
                       daysInWeek = Math.min(daysToEndOfWeek, VISIBLE_DAYS);
                     } else {
-                      // Za ostale dane, koristi standardnu logiku
                       daysInWeek = Math.min(7, VISIBLE_DAYS - index);
                     }
                     
-                    // Proveri da li je ovo poslednja nedelja (kraj vidljivog perioda)
                     const isLastWeek = index + daysInWeek >= VISIBLE_DAYS;
                     
                     return (
@@ -836,13 +762,11 @@ export default function MapPage() {
                     const currentDate = new Date(startDate);
                     currentDate.setDate(startDate.getDate() + index);
                     
-                    // Izračunaj prvi dan nedelje za ovaj datum (ponedeljak)
-                    const dayOfWeek = currentDate.getDay(); // 0 = nedelja, 1 = ponedeljak, ...
-                    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Ako je nedelja, idemo na prethodni ponedeljak
+                    const dayOfWeek = currentDate.getDay();
+                    const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
                     const weekStartDate = new Date(currentDate);
                     weekStartDate.setDate(currentDate.getDate() - daysToSubtract);
                     
-                    // Proveri da li je ovo prvi dan nedelje (ponedeljak)
                     const isFirstDayOfWeek = weekStartDate.getTime() === currentDate.getTime();
                     
                     return (
@@ -882,13 +806,13 @@ export default function MapPage() {
                   const actualRoomIndex = startRoom + roomIndex;
                   const roomNumber = hotel[actualRoomIndex];
                   
-                  if (!roomNumber) return null; // Ako nema više soba, ne renderuj ništa
+                  if (!roomNumber) return null;
                   
                   return (
                     <div 
                       key={actualRoomIndex} 
                       className="grid gap-0 border-b border-gray-200"
-                      style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}
+                      style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS * DAY_PARTS}, 1fr)` }}
                     >
                       {/* Fiksirani broj sobe */}
                       <div 
@@ -898,24 +822,67 @@ export default function MapPage() {
                         {roomNumber}
                       </div>
                       
-                      {/* Polja za datume sa rezervacijama */}
+                      {/* Polja za datume sa rezervacijama - levi i desni deo */}
                       {Array.from({ length: VISIBLE_DAYS }, (_, index) => {
                         const currentDate = new Date(startDate);
                         currentDate.setDate(startDate.getDate() + index);
                         
-                        const isReserved = hasReservation(roomNumber, currentDate);
+                        const reservationStatus = getReservationStatus(roomNumber, currentDate);
+                        
+                        // Debug log za sobu 107, 20.8
+                        if (roomNumber === "107" && currentDate.getDate() === 20 && currentDate.getMonth() === 7) {
+                          console.log(`Room ${roomNumber}, Date ${currentDate}, Status: ${reservationStatus}`);
+                        }
+                        
+                        // Logika za boje i separatore u jednom bloku
+                        let leftBgColor = 'text-gray-500';
+                        let rightBgColor = 'text-gray-500';
+                        let leftSeparator = 'border-gray-100';
+                        let rightSeparator = 'none';
+                        
+                        if (reservationStatus === 'both') {
+                          leftBgColor = 'bg-blue-100';
+                          rightBgColor = 'bg-blue-100';
+                          leftSeparator = 'border-black';
+                          rightSeparator = '1px solid black';
+                        } else if (reservationStatus === 'checkin') {
+                          leftBgColor = 'text-gray-500';
+                          rightBgColor = 'bg-blue-100';
+                          leftSeparator = 'border-black';
+                          rightSeparator = 'none';
+                        } else if (reservationStatus === 'checkout') {
+                          leftBgColor = 'bg-blue-100';
+                          rightBgColor = 'text-gray-500';
+                          leftSeparator = 'border-gray-100';
+                          rightSeparator = '1px solid black';
+                        } else if (reservationStatus === 'reserved') {
+                          leftBgColor = 'bg-blue-100';
+                          rightBgColor = 'bg-blue-100';
+                          leftSeparator = 'border-gray-100';
+                          rightSeparator = 'none';
+                        } else if (reservationStatus === 'free') {
+                          leftBgColor = 'text-gray-500';
+                          rightBgColor = 'text-gray-500';
+                          leftSeparator = 'border-gray-100';
+                          rightSeparator = 'none';
+                        }
                         
                         return (
-                          <div
-                            key={index}
-                            className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${
-                              isReserved 
-                                ? 'bg-blue-100' 
-                                : 'text-gray-500'
-                            }`}
-                          >
-                            {/* Polje je prazno, samo obeleženo ako postoji rezervacija */}
-                          </div>
+                          <React.Fragment key={index}>
+                            {/* Levi deo dana */}
+                            <div
+                              className={`px-1 py-3 text-center text-xs border-r ${leftSeparator} ${leftBgColor}`}
+                            >
+                            </div>
+                            {/* Desni deo dana */}
+                            <div
+                              className={`px-1 py-3 text-center text-xs border-r border-gray-100 ${rightBgColor}`}
+                              style={{
+                                borderLeft: rightSeparator
+                              }}
+                            >
+                            </div>
+                          </React.Fragment>
                         );
                       })}
                     </div>
@@ -984,12 +951,10 @@ function CalendarPicker({ selectedDate, onDateSelect }) {
     const firstDayOfMonth = getFirstDayOfMonth(currentMonth);
     const days = [];
 
-    // Add empty cells for days before the first day of the month
     for (let i = 0; i < firstDayOfMonth; i++) {
       days.push(<div key={`empty-${i}`} className="p-2"></div>);
     }
 
-    // Add days of the month
     for (let day = 1; day <= daysInMonth; day++) {
       const isSelected = isSelectedDate(day);
       const isTodayDate = isToday(day);
