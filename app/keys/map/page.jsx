@@ -472,47 +472,28 @@ export default function MapPage() {
 
   // NOVA FUNKCIJA - Vraća status: "free", "reserved", "checkin", "checkout", "both"
   const getReservationStatus = (roomId, date) => {
-    // Pronađi sve rezervacije za ovu sobu na ovaj datum
-    const reservations = mockReservations.filter(res => {
-      if (res.roomNumber !== roomId) return false;
-      
-      // Konvertuj datume u Date objekte za poređenje
+    const roomReservations = mockReservations.filter(res => res.roomNumber === roomId);
+    const dateString = date.toDateString();
+    
+    let checkinCount = 0;
+    let checkoutCount = 0;
+    let occupiedCount = 0;
+    
+    roomReservations.forEach(res => {
       const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
       const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
       
-      // Proveri da li je datum u periodu rezervacije (uključujući check-out dan)
-      return date >= checkIn && date <= checkOut;
+      if (dateString === checkIn.toDateString()) checkinCount++;
+      if (dateString === checkOut.toDateString()) checkoutCount++;
+      if (date > checkIn && date < checkOut) occupiedCount++;
     });
     
-    if (reservations.length === 0) return "free";
+    if (checkinCount > 0 && checkoutCount > 0) return "both";
+    if (checkinCount > 0) return "checkin";
+    if (checkoutCount > 0) return "checkout";
+    if (occupiedCount > 0) return "reserved";
     
-    // Proveri da li postoji check-in i check-out na isti dan
-    let hasCheckIn = false;
-    let hasCheckOut = false;
-    
-    reservations.forEach(res => {
-      const checkIn = new Date(res.checkIn.split('-').reverse().join('-'));
-      const checkOut = new Date(res.checkOut.split('-').reverse().join('-'));
-      
-      // Proveri da li je ovo check-in dan
-      if (date.getTime() === checkIn.getTime()) {
-        hasCheckIn = true;
-      }
-      // Proveri da li je ovo check-out dan
-      if (date.getTime() === checkOut.getTime()) {
-        hasCheckOut = true;
-      }
-    });
-    
-    if (hasCheckIn && hasCheckOut) {
-      return "both"; // Check-in i check-out isti dan
-    } else if (hasCheckIn) {
-      return "checkin"; // Check-in dan
-    } else if (hasCheckOut) {
-      return "checkout"; // Check-out dan
-    } else {
-      return "reserved"; // Srednji dani rezervacije
-    }
+    return "free";
   };
 
   return (
@@ -647,7 +628,7 @@ export default function MapPage() {
                 style={{ userSelect: 'none' }}
               >
                 {/* Red 1: Godina + Mesec */}
-                <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS * DAY_PARTS}, 1fr)` }}>
                   {/* Fiksirano polje za mesec */}
                   <div className="px-4 py-1 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center">
                     Month
@@ -681,7 +662,7 @@ export default function MapPage() {
                           isFirstDayOfMonth ? 'border-l-2 border-l-blue-300' : ''
                         }`}
                         style={{ 
-                          gridColumn: `${index + 2} / span ${daysInMonth}`
+                          gridColumn: `${index * 2 + 2} / span ${daysInMonth * 2}`
                         }}
                       >
                         <div className="font-medium">
@@ -693,7 +674,7 @@ export default function MapPage() {
                 </div>
                 
                 {/* Red 2: Nedelje */}
-                <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                <div className="grid gap-0 relative" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS * DAY_PARTS}, 1fr)` }}>
                   {/* Fiksirano polje za nedelju */}
                   <div 
                     className={`px-4 py-1 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -736,7 +717,7 @@ export default function MapPage() {
                           (isFirstDayOfWeek && index > 0) || (isFirstVisibleDay && dayOfWeek === 1) ? 'border-l-2 border-l-blue-300' : ''
                         }`}
                         style={{ 
-                          gridColumn: `${index + 2} / span ${daysInWeek}`
+                          gridColumn: `${index * 2 + 2} / span ${daysInWeek * 2}`
                         }}
                       >
                         <div className="font-medium">
@@ -748,7 +729,7 @@ export default function MapPage() {
                 </div>
                 
                 {/* Red 3: Dani */}
-                <div className="grid gap-0" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS}, 1fr)` }}>
+                <div className="grid gap-0" style={{ gridTemplateColumns: `120px repeat(${VISIBLE_DAYS * DAY_PARTS}, 1fr)` }}>
                   {/* Fiksirano polje za sobu/dan */}
                   <div 
                     className={`px-4 py-2 text-sm font-normal text-gray-700 bg-gray-100 border-r border-gray-200 text-center ${isRoomsDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
@@ -775,6 +756,9 @@ export default function MapPage() {
                         className={`px-1 py-1 text-center text-xs font-semibold text-gray-700 border-r border-gray-200 ${getWeekColor(currentDate)} ${
                           isFirstDayOfWeek ? 'border-l-2 border-l-blue-300' : ''
                         }`}
+                        style={{ 
+                          gridColumn: `${index * 2 + 2} / span 2`
+                        }}
                       >
                         <div className="font-medium leading-tight">{header.day} {header.date}</div>
                       </div>
@@ -829,43 +813,49 @@ export default function MapPage() {
                         
                         const reservationStatus = getReservationStatus(roomNumber, currentDate);
                         
-                        // Debug log za sobu 107, 20.8
-                        if (roomNumber === "107" && currentDate.getDate() === 20 && currentDate.getMonth() === 7) {
-                          console.log(`Room ${roomNumber}, Date ${currentDate}, Status: ${reservationStatus}`);
+                        // Log za dan, sobu i status (samo ako nije free)
+                        if (reservationStatus !== 'free') {
+                          console.log(`Room ${roomNumber}, Date ${currentDate.toLocaleDateString()}, Status: ${reservationStatus}`);
                         }
                         
-                        // Logika za boje i separatore u jednom bloku
-                        let leftBgColor = 'text-gray-500';
-                        let rightBgColor = 'text-gray-500';
-                        let leftSeparator = 'border-gray-100';
-                        let rightSeparator = 'none';
                         
+                                                 // Logika za boje i separatore u jednom bloku
+                         let leftBgColor = 'text-gray-500';
+                         let rightBgColor = 'text-gray-500';
+                         let leftSeparator = 'border-gray-100';
+                         let rightSeparator = 'none';
+                         
                         if (reservationStatus === 'both') {
-                          leftBgColor = 'bg-blue-100';
-                          rightBgColor = 'bg-blue-100';
-                          leftSeparator = 'border-black';
-                          rightSeparator = '1px solid black';
-                        } else if (reservationStatus === 'checkin') {
-                          leftBgColor = 'text-gray-500';
-                          rightBgColor = 'bg-blue-100';
-                          leftSeparator = 'border-black';
-                          rightSeparator = 'none';
-                        } else if (reservationStatus === 'checkout') {
-                          leftBgColor = 'bg-blue-100';
-                          rightBgColor = 'text-gray-500';
-                          leftSeparator = 'border-gray-100';
-                          rightSeparator = '1px solid black';
-                        } else if (reservationStatus === 'reserved') {
-                          leftBgColor = 'bg-blue-100';
-                          rightBgColor = 'bg-blue-100';
-                          leftSeparator = 'border-gray-100';
-                          rightSeparator = 'none';
-                        } else if (reservationStatus === 'free') {
-                          leftBgColor = 'text-gray-500';
-                          rightBgColor = 'text-gray-500';
-                          leftSeparator = 'border-gray-100';
-                          rightSeparator = 'none';
-                        }
+                            // Check-in i check-out isti dan - oba dela zauzeta (jedna rezervacija se završava, druga počinje)
+                            leftBgColor = 'bg-blue-100';
+                            rightBgColor = 'bg-blue-100';
+                            leftSeparator = 'border-black';
+                            rightSeparator = '1px solid black';
+                          } else if (reservationStatus === 'checkin') {
+                           // Check-in dan - levi deo slobodan (do 14:00), desni zauzet (od 14:00)
+                           leftBgColor = 'text-gray-500';
+                           rightBgColor = 'bg-blue-100';
+                           leftSeparator = 'border-black';
+                           rightSeparator = 'none';
+                         } else if (reservationStatus === 'checkout') {
+                           // Check-out dan - levi deo zauzet (do 10:00), desni slobodan (od 10:00)
+                           leftBgColor = 'bg-blue-100';
+                           rightBgColor = 'text-gray-500';
+                           leftSeparator = 'border-gray-100';
+                           rightSeparator = '1px solid black';
+                         } else if (reservationStatus === 'reserved') {
+                           // Srednji dani rezervacije - ceo dan zauzet
+                           leftBgColor = 'bg-blue-100';
+                           rightBgColor = 'bg-blue-100';
+                           leftSeparator = 'border-gray-100';
+                           rightSeparator = 'none';
+                         } else if (reservationStatus === 'free') {
+                           // Slobodan dan
+                           leftBgColor = 'text-gray-500';
+                           rightBgColor = 'text-gray-500';
+                           leftSeparator = 'border-gray-100';
+                           rightSeparator = 'none';
+                         }
                         
                         return (
                           <React.Fragment key={index}>
