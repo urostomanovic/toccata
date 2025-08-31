@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import KeysSubnav from "@/components/KeysSubnav";
 import ReservationsFilter from "@/components/ReservationsFilter";
-import { ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { ChevronDownIcon, MagnifyingGlassIcon, CalendarIcon } from "@heroicons/react/24/outline";
 import { mockReservations } from "@/lib/mockData";
 
 export default function ReservationsPage() {
@@ -17,6 +17,10 @@ export default function ReservationsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedReservation, setSelectedReservation] = useState(null);
+  const [editFormData, setEditFormData] = useState({});
+  const [isEditCalendarOpen, setIsEditCalendarOpen] = useState(false);
+  const [editingDateField, setEditingDateField] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
 
   // Apply search filter when searchTerm changes
   useEffect(() => {
@@ -41,12 +45,143 @@ export default function ReservationsPage() {
 
   const handleEditReservation = (reservation) => {
     setSelectedReservation(reservation);
+    setEditFormData({
+      guestName: reservation.guestName,
+      roomNumber: reservation.roomNumber,
+      checkIn: reservation.checkIn,
+      checkOut: reservation.checkOut,
+      keyStatus: reservation.keyStatus,
+      reservationStatus: reservation.reservationStatus,
+      phone: reservation.phone,
+      email: reservation.email
+    });
     setIsEditModalOpen(true);
   };
 
   const closeEditModal = () => {
     setIsEditModalOpen(false);
     setSelectedReservation(null);
+    setEditFormData({});
+    setIsEditCalendarOpen(false);
+    setEditingDateField(null);
+    setSelectedDate(null);
+  };
+
+  const updateEditFormData = (field, value) => {
+    setEditFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleDateSelect = (date) => {
+    if (isEditModalOpen && editingDateField) {
+      const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()}`;
+      updateEditFormData(editingDateField, formattedDate);
+      setIsEditCalendarOpen(false);
+      setEditingDateField(null);
+    }
+  };
+
+  const openCalendar = (field) => {
+    setEditingDateField(field);
+    setIsEditCalendarOpen(true);
+    // Set selectedDate based on current form data
+    if (editFormData[field]) {
+      const [day, month, year] = editFormData[field].split('-');
+      setSelectedDate(new Date(year, month - 1, day));
+    } else {
+      setSelectedDate(new Date());
+    }
+  };
+
+  const validateEditReservation = (roomId, checkIn, checkOut, existingReservationId) => {
+    if (!checkIn || !checkOut) {
+      alert('Check-in and Check-out dates are required');
+      return false;
+    }
+
+    // Parse dates
+    const [dayIn, monthIn, yearIn] = checkIn.split('-');
+    const [dayOut, monthOut, yearOut] = checkOut.split('-');
+    const checkInDate = new Date(yearIn, monthIn - 1, dayIn);
+    const checkOutDate = new Date(yearOut, monthOut - 1, dayOut);
+
+    if (checkInDate >= checkOutDate) {
+      alert('Check-out date must be after check-in date');
+      return false;
+    }
+
+    // Check for overlaps with other reservations
+    const overlappingReservations = mockReservations.filter(res => 
+      res.id !== existingReservationId && 
+      res.roomNumber === roomId.toString()
+    );
+
+    for (const reservation of overlappingReservations) {
+      const [resDayIn, resMonthIn, resYearIn] = reservation.checkIn.split('-');
+      const [resDayOut, resMonthOut, resYearOut] = reservation.checkOut.split('-');
+      const resCheckIn = new Date(resYearIn, resMonthIn - 1, resDayIn);
+      const resCheckOut = new Date(resYearOut, resMonthOut - 1, resDayOut);
+
+      // Check if dates overlap
+      if (checkInDate < resCheckOut && checkOutDate > resCheckIn) {
+        alert(`Room ${roomId} is already reserved for this period`);
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleSave = () => {
+    if (!editFormData.guestName || !editFormData.checkIn || !editFormData.checkOut) {
+      alert('Guest Name, Check In, and Check Out are required fields');
+      return;
+    }
+
+    if (validateEditReservation(editFormData.roomNumber, editFormData.checkIn, editFormData.checkOut, selectedReservation.id)) {
+      // Update the reservation in mockReservations
+      const existingIndex = mockReservations.findIndex(r => r.id === selectedReservation.id);
+      if (existingIndex !== -1) {
+        mockReservations[existingIndex] = {
+          ...mockReservations[existingIndex],
+          guestName: editFormData.guestName,
+          roomNumber: editFormData.roomNumber.toString(),
+          checkIn: editFormData.checkIn,
+          checkOut: editFormData.checkOut,
+          keyStatus: editFormData.keyStatus || "Active",
+          reservationStatus: editFormData.reservationStatus || "Confirmed",
+          phone: editFormData.phone || "",
+          email: editFormData.email || ""
+        };
+        console.log('Reservation updated:', mockReservations[existingIndex]);
+      }
+      
+      alert('Reservation updated successfully!');
+      closeEditModal();
+      // Refresh the filtered reservations
+      if (currentFilter && currentFilter.data) {
+        handleApplyFilter(currentFilter.data);
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    if (confirm('Are you sure you want to delete this reservation?')) {
+      const existingIndex = mockReservations.findIndex(r => r.id === selectedReservation.id);
+      if (existingIndex !== -1) {
+        mockReservations.splice(existingIndex, 1);
+        console.log('Reservation deleted');
+      }
+      
+      alert('Reservation deleted successfully!');
+      closeEditModal();
+      // Refresh the filtered reservations
+      if (currentFilter && currentFilter.data) {
+        handleApplyFilter(currentFilter.data);
+      }
+    }
   };
 
   // Load saved filters on component mount
@@ -415,69 +550,213 @@ export default function ReservationsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Guest Name</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.guestName}
-                </div>
+                <input
+                  type="text"
+                  value={editFormData.guestName || ''}
+                  onChange={(e) => updateEditFormData('guestName', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Room Number</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.roomNumber}
-                </div>
+                <input
+                  type="text"
+                  value={editFormData.roomNumber || ''}
+                  onChange={(e) => updateEditFormData('roomNumber', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Check In</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.checkIn}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editFormData.checkIn || ''}
+                    onClick={() => openCalendar('checkIn')}
+                    readOnly
+                    className="w-full p-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                  />
+                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Check Out</label>
-                <div className="p-4 bg-gray-50 rounded-md border">
-                  {selectedReservation.checkOut}
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={editFormData.checkOut || ''}
+                    onClick={() => openCalendar('checkOut')}
+                    readOnly
+                    className="w-full p-3 pr-10 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent cursor-pointer"
+                  />
+                  <CalendarIcon className="absolute right-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 </div>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Key Status</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.keyStatus}
-                </div>
+                <select
+                  value={editFormData.keyStatus || 'Active'}
+                  onChange={(e) => updateEditFormData('keyStatus', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Lost">Lost</option>
+                  <option value="Invalidated">Invalidated</option>
+                </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reservation Status</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.reservationStatus}
-                </div>
+                <select
+                  value={editFormData.reservationStatus || 'Confirmed'}
+                  onChange={(e) => updateEditFormData('reservationStatus', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                >
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.phone}
-                </div>
+                <input
+                  type="text"
+                  value={editFormData.phone || ''}
+                  onChange={(e) => updateEditFormData('phone', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <div className="p-3 bg-gray-50 rounded-md border">
-                  {selectedReservation.email}
-                </div>
+                <input
+                  type="text"
+                  value={editFormData.email || ''}
+                  onChange={(e) => updateEditFormData('email', e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
             </div>
             
-            <div className="mt-6 flex justify-end">
+            <div className="mt-6 flex justify-between">
               <button
-                onClick={closeEditModal}
-                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                onClick={handleDelete}
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500"
               >
-                Close
+                Delete
               </button>
+              
+              <div className="flex gap-2">
+                <button
+                  onClick={closeEditModal}
+                  className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSave}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  Save
+                </button>
+              </div>
             </div>
+
+            {/* Calendar Picker */}
+            {isEditCalendarOpen && (
+              <div 
+                className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+                onClick={(e) => e.stopPropagation()}
+                style={{ pointerEvents: 'auto' }}
+              >
+                <div className="bg-white rounded-lg shadow-xl p-6 max-w-md w-full mx-4">
+                  <h3 className="text-lg font-semibold mb-4">
+                    Select {editingDateField === 'checkIn' ? 'Check-in' : 'Check-out'} Date
+                  </h3>
+                  
+                  <div className="grid grid-cols-7 gap-1 mb-4">
+                    {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                      <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                        {day}
+                      </div>
+                    ))}
+                    
+                    {(() => {
+                      const currentDate = selectedDate || new Date();
+                      const year = currentDate.getFullYear();
+                      const month = currentDate.getMonth();
+                      const firstDay = new Date(year, month, 1);
+                      const lastDay = new Date(year, month + 1, 0);
+                      const startDate = new Date(firstDay);
+                      startDate.setDate(startDate.getDate() - firstDay.getDay());
+                      
+                      const days = [];
+                      for (let i = 0; i < 42; i++) {
+                        const date = new Date(startDate);
+                        date.setDate(startDate.getDate() + i);
+                        
+                        if (date.getMonth() === month) {
+                          const dayNumber = date.getDate();
+                          const isSelected = editFormData[editingDateField] === `${dayNumber.toString().padStart(2, '0')}-${(month + 1).toString().padStart(2, '0')}-${year}`;
+                          
+                          days.push(
+                            <button
+                              key={i}
+                              onClick={() => handleDateSelect(date)}
+                              className={`w-10 h-10 rounded-full text-sm font-medium transition-colors ${
+                                isSelected 
+                                  ? 'bg-blue-600 text-white' 
+                                  : 'hover:bg-gray-100 text-gray-700'
+                              }`}
+                            >
+                              {dayNumber}
+                            </button>
+                          );
+                        } else {
+                          days.push(<div key={i} className="w-10 h-10"></div>);
+                        }
+                      }
+                      return days;
+                    })()}
+                  </div>
+                  
+                  <div className="flex justify-between">
+                    <button
+                      onClick={() => {
+                        const newDate = new Date(selectedDate || new Date());
+                        newDate.setMonth(newDate.getMonth() - 1);
+                        setSelectedDate(newDate);
+                      }}
+                      className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Previous
+                    </button>
+                    <button
+                      onClick={() => {
+                        const newDate = new Date(selectedDate || new Date());
+                        newDate.setMonth(newDate.getMonth() + 1);
+                        setSelectedDate(newDate);
+                      }}
+                      className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800"
+                    >
+                      Next
+                    </button>
+                  </div>
+                  
+                  <button
+                    onClick={() => setIsEditCalendarOpen(false)}
+                    className="mt-4 w-full px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

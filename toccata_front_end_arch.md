@@ -224,5 +224,127 @@ export default function HotelRoomsPage({ params }) {
 
 ---
 
-*Dokument kreiran: 19.08.2025*
+## 🚀 **Strategija Razvoja Velike Aplikacije - AI Assistant Preporuke**
+
+### **1. Arhitekturna Strategija**
+
+#### **Modularna Struktura:**
+- **Feature-based organizacija** umesto type-based
+- **Svaki modul** (Keys, Rooms, Alarms) ima svoj folder
+- **Shared components** u centralnom `components/` folderu
+- **Custom hooks** za business logic
+
+#### **State Management:**
+- **Context API** za global state (već implementirano ReservationsContext)
+- **Zustand** ili **Redux Toolkit** za kompleksniji state
+- **React Query** za server state management
+
+### **2. Development Workflow**
+
+#### **Code Organization:**
+```
+app/
+├── keys/
+│   ├── components/          # Keys-specific components
+│   ├── hooks/              # Custom hooks
+│   ├── utils/              # Helper functions
+│   └── types/              # TypeScript interfaces
+├── rooms/
+│   ├── components/
+│   ├── hooks/
+│   └── utils/
+└── shared/
+    ├── components/          # Reusable components
+    ├── hooks/              # Common hooks
+    ├── utils/              # Utility functions
+    └── constants/          # App constants
+```
+
+#### **Component Strategy:**
+- **Atomic design** principi
+- **Composition over inheritance**
+- **Props drilling** rešiti sa Context ili custom hooks
+
+### **3. Performance Optimizacija**
+
+#### **Code Splitting:**
+- **Dynamic imports** za velike komponente
+- **Route-based splitting** u Next.js
+- **Lazy loading** za modale i kalendare
+
+#### **Memoization:**
+- **React.memo** za expensive komponente
+- **useMemo** i **useCallback** za heavy calculations
+- **Virtualization** za velike liste (react-window)
+
+### **4. Testing Strategija**
+
+#### **Testing Pyramid:**
+- **Unit tests** za utility funkcije
+- **Component tests** sa React Testing Library
+- **Integration tests** za API endpoints
+- **E2E tests** za kritične user flows
+
+### **5. Development Tools**
+
+#### **Code Quality:**
+- **ESLint** sa strict rules
+- **Prettier** za consistent formatting
+- **Husky** za pre-commit hooks
+- **TypeScript** za type safety
+
+#### **Monitoring:**
+- **Error boundaries** za graceful error handling
+- **Performance monitoring** (Core Web Vitals)
+- **User analytics** za UX insights
+
+### **6. Deployment Strategy**
+
+#### **Environment Management:**
+- **Development** - local mock data
+- **Staging** - test database
+- **Production** - real database
+
+#### **CI/CD Pipeline:**
+- **Automated testing** na push
+- **Code quality checks**
+- **Automated deployment**
+
+### **7. Dokumentacija**
+
+#### **Code Documentation:**
+- **JSDoc** komentari za funkcije
+- **README** za svaki modul
+- **API documentation** sa OpenAPI/Swagger
+- **Component storybook** za UI komponente
+
+### **8. Preporučena Implementacija za TOCCATA**
+
+#### **Kratkoročno (1-2 nedelje):**
+1. **Reorganizuj** postojeće fajlove po modulima
+2. **Izdvoji** shared komponente
+3. **Kreiraj** custom hooks za business logic
+
+#### **Srednjoročno (1-2 meseca):**
+1. **Implementiraj** proper state management
+2. **Dodaj** error boundaries
+3. **Setup** testing framework
+
+#### **Dugoročno (3+ meseca):**
+1. **Performance optimization**
+2. **Advanced testing**
+3. **Monitoring i analytics**
+
+### **9. Ključne Prednosti Ove Strategije**
+
+- **Skalabilnost** - lako dodavanje novih modula
+- **Održivost** - jasna struktura i organizacija
+- **Performance** - optimizacija i code splitting
+- **Quality** - testing i monitoring
+- **Team Development** - jasne konvencije i workflow
+
+---
+
+*Dokument kreiran: 31.08.2025*
 *Status: Analiza završena, čeka odluku tima*
+*Strategija razvoja dodana: 31.08.2025*
